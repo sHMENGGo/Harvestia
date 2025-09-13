@@ -1,0 +1,16 @@
+
+Must have node v22.17.1 installed in your device.
+
+Development Start: Aug 27, 2025
+
+
+In terminal, run "npm i" to install all dependencies.
+
+Go to frontend folder and run 
+"npm i axios" to install axios.
+"npm run dev" to start frontend.
+
+Go to backend folder and run "npm start" to start backend.
+"npx prisma init --datasource-provider postgresql" to initialize prisma.
+"npx prisma generate" to create prisma client and everytime you modify schema.
+

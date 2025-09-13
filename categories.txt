@@ -1,0 +1,100 @@
+
+### **1. Fiction**
+
+* **Literary Fiction**
+* **Historical Fiction**
+* **Science Fiction**
+* **Fantasy**
+* **Mystery & Thriller**
+* **Romance**
+* **Horror**
+* **Adventure**
+* **Dystopian**
+* **Short Stories**
+
+---
+
+### **2. Non-Fiction**
+
+* **Biographies & Memoirs**
+* **History**
+* **Politics & Current Affairs**
+* **Philosophy**
+* **Religion & Spirituality**
+* **Self-Help & Personal Development**
+* **Health & Wellness**
+* **Business & Economics**
+* **Science & Technology**
+* **Travel**
+* **True Crime**
+
+---
+
+### **3. Academic & Educational**
+
+* **Textbooks**
+* **Reference**
+* **Research & Journals**
+* **Law**
+* **Medicine**
+* **Engineering**
+* **Computer Science**
+* **Social Sciences**
+* **Language & Linguistics**
+* **Education & Teaching**
+
+---
+
+### **4. Children’s Books**
+
+* **Picture Books**
+* **Early Readers**
+* **Middle Grade**
+* **Young Adult (YA)**
+* **Fairy Tales & Folklore**
+* **Educational Children’s Books**
+
+---
+
+### **5. Arts & Literature**
+
+* **Poetry**
+* **Drama & Plays**
+* **Classics**
+* **Essays**
+* **Literary Criticism**
+* **Art & Photography**
+* **Music & Performing Arts**
+
+---
+
+### **6. Lifestyle & Hobbies**
+
+* **Cooking & Food**
+* **Home & Garden**
+* **Sports & Recreation**
+* **Crafts & DIY**
+* **Travel Guides**
+* **Pets & Animal Care**
+* **Fashion & Style**
+
+---
+
+### **7. Comics & Graphic Novels**
+
+* **Manga**
+* **Superhero**
+* **Fantasy/Adventure**
+* **Slice of Life**
+* **Non-Fiction Graphic Novels**
+
+---
+
+### **8. Spirituality & Esoteric**
+
+* **Mythology**
+* **Occult & Mysticism**
+* **Astrology**
+* **New Age**
+* **Meditation & Mindfulness**
+

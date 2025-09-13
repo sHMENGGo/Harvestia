@@ -1,0 +1,57 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  userID       Int       @id               @default(autoincrement())
+  userName     String    @db.VarChar(100)  @unique
+  userPassword String    
+  userEmail    String    @db.VarChar(100)  @unique
+  isAdmin      Boolean   @default(false) 
+}
+
+model Category {
+  categoryID     Int           @id      @default(autoincrement())
+  categoryName   String        @unique  @db.VarChar(100)
+  // Back Relation
+  subCategories  SubCategory[]
+  books          Book[]
+}
+
+model SubCategory {
+  subCategoryID    Int       @id      @default(autoincrement())
+  subCategoryName  String    @unique  @db.VarChar(100)
+  categoryID       Int
+  // Relation
+  category         Category  @relation(fields: [categoryID], references: [categoryID])
+  // Back Relation
+  books            Book[]
+}
+
+model Book {
+  bookID         Int      @id  @default(autoincrement())
+  bookTitle      String   @unique  @db.VarChar(100)
+  bookAuthor     String?  @db.VarChar(100)   
+  categoryID     Int?
+  subCategoryID  Int?
+  bookPrice      Float?
+  bookStock      Int?
+  bookStatus     Boolean  @default(true)
+  
+  // Relation
+  category     Category? @relation(fields: [categoryID], references: [categoryID])
+  subCategory  SubCategory? @relation(fields: [subCategoryID], references: [subCategoryID])
+}
+
+
