@@ -1,9 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -14,44 +8,29 @@ datasource db {
 }
 
 model User {
-  userID       Int       @id               @default(autoincrement())
-  userName     String    @db.VarChar(100)  @unique
-  userPassword String    
-  userEmail    String    @db.VarChar(100)  @unique
-  isAdmin      Boolean   @default(false) 
+  id       Int       @id @default(autoincrement())
+  userName String    @unique @db.VarChar(100)
+  password String
+  email    String    @unique @db.VarChar(100)
+  isAdmin  Boolean   @default(false)
 }
 
 model Category {
-  categoryID     Int           @id      @default(autoincrement())
-  categoryName   String        @unique  @db.VarChar(100)
-  // Back Relation
-  subCategories  SubCategory[]
-  books          Book[]
+  id           Int           @id @default(autoincrement())
+  name         String        @unique @db.VarChar(100)
+  rice         Rice[]
 }
 
-model SubCategory {
-  subCategoryID    Int       @id      @default(autoincrement())
-  subCategoryName  String    @unique  @db.VarChar(100)
-  categoryID       Int
-  // Relation
-  category         Category  @relation(fields: [categoryID], references: [categoryID])
-  // Back Relation
-  books            Book[]
+model Rice {
+  id            Int          @id @default(autoincrement())
+  name          String       @unique @db.VarChar(100)
+  company       String?      @db.VarChar(100)
+  categoryID    Int?       
+  weightKG      Int?
+  price         Float
+  stock         Int         @default(0)
+  rating        Decimal?     @db.Decimal(2, 1)
+  isAvailable   Boolean?      @default(true)
+  imagePath     String?
+  category      Category?    @relation(fields: [categoryID], references: [id])
 }
-
-model Book {
-  bookID         Int      @id  @default(autoincrement())
-  bookTitle      String   @unique  @db.VarChar(100)
-  bookAuthor     String?  @db.VarChar(100)   
-  categoryID     Int?
-  subCategoryID  Int?
-  bookPrice      Float?
-  bookStock      Int?
-  bookStatus     Boolean  @default(true)
-  
-  // Relation
-  category     Category? @relation(fields: [categoryID], references: [categoryID])
-  subCategory  SubCategory? @relation(fields: [subCategoryID], references: [subCategoryID])
-}
-
-
