@@ -20,3 +20,10 @@ export async function apiDelete(url, data) {
       return res.data
    } catch(err) {console.error("Error deleting data", err)}
 }
+
+export async function apiPut(url, data) {
+   try {
+      const res = await axios.put(`http://localhost:5000/api${url}`, data, {withCredentials:true})
+      return res.data
+   } catch(err) {console.error("Error putting data", err)}
+}

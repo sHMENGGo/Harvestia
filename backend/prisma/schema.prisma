@@ -1,36 +1,40 @@
 generator client {
-  provider = "prisma-client-js"
+  provider = "prisma-client"
+  output   = "../generated/prisma"
 }
 
 datasource db {
   provider = "postgresql"
-  url      = env("DATABASE_URL")
-}
-
-model User {
-  id       Int       @id @default(autoincrement())
-  userName String    @unique @db.VarChar(100)
-  password String
-  email    String    @unique @db.VarChar(100)
-  isAdmin  Boolean   @default(false)
 }
 
 model Category {
-  id           Int           @id @default(autoincrement())
-  name         String        @unique @db.VarChar(100)
-  rice         Rice[]
+  id      Int     @id @default(autoincrement())
+  name    String  @unique @db.VarChar(100)
+  Rice    Rice[]
 }
 
 model Rice {
-  id            Int          @id @default(autoincrement())
-  name          String       @unique @db.VarChar(100)
-  company       String?      @db.VarChar(100)
-  categoryID    Int?       
-  weightKG      Int?
-  price         Float
-  stock         Int         @default(0)
-  rating        Decimal?     @db.Decimal(2, 1)
-  isAvailable   Boolean?      @default(true)
-  imagePath     String?
-  category      Category?    @relation(fields: [categoryID], references: [id])
+  id             Int        @id @default(autoincrement())
+  name           String     @unique @db.VarChar(100)
+  company        String?    @db.VarChar(100)
+  categoryID     Int?
+  price          Float
+  stock          Int        @default(0)
+  rating         Decimal?   @db.Decimal(2, 1)
+  isAvailable    Boolean    @default(true)
+  imagePath      String?
+  imagePublicID  String?
+  weightKG       Float?
+  category       Category?  @relation(fields: [categoryID], references: [id])
+}
+
+model User {
+  id              Int       @id @default(autoincrement())
+  userName        String    @unique @db.VarChar(100)
+  password        String
+  email           String    @unique @db.VarChar(100)
+  isAdmin         Boolean   @default(false)
+  address         String?
+  imagePath       String?
+  imagePublicID   String?
 }

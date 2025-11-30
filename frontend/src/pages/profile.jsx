@@ -1,9 +1,16 @@
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
-import { faUser } from "@fortawesome/free-solid-svg-icons"
-import { use } from "react"
+import { faUser, faEdit } from "@fortawesome/free-solid-svg-icons"
+import { useState } from "react"
+import { apiPut } from "../components/api"
 
 export default function profile({user}) {
    console.log('user: ', user)
+
+   const [editMode, setEditMode] = useState(false)
+   const [newUserName, setNewUserName] = useState(user.userName)
+   const [newPswrd, setNewPswrd] = useState(user.password)
+   const [newEmail, setNewEmail] = useState(user.email)
+   const [newAddress, setNewAddress] = useState(user.address)
 
    return (
       <main className="h-full relative p-4 box-border">
@@ -16,21 +23,21 @@ export default function profile({user}) {
             <input type="file" id="photoUpload"  className=" hidden" /><br />
             <div className="w-full flex items-center col-start-1">
                <label htmlFor="name">Name: </label>
-               <input type="text" value={user.userName} id="name"  className="ml-2 flex-1 border rounded-3xl p-1 px-3" />
+               <input type="text" value={newUserName} onChange={editMode ? (e)=> setNewUserName(e.target.value) : null} id="name"  className={`${editMode ? 'opacity-100' : 'opacity-70'} ml-2 flex-1 border rounded-3xl p-1 px-3`} />
             </div>
             <div className=" w-full flex items-center col-start-1">
                <label htmlFor="pswrd">Password: </label>
-               <input type="password" value={user.password} id="pswrd"  className="ml-2 flex-1 border rounded-3xl p-1 px-3" />
+               <input type="password" value={newPswrd} onChange={editMode ? (e)=> setNewPswrd(e.target.value) : null} id="pswrd"  className={`${editMode ? 'opacity-100' : 'opacity-70'} ml-2 flex-1 border rounded-3xl p-1 px-3`} />
             </div>
             <div className=" w-full flex items-center col-start-1">
                <label htmlFor="email">Email: </label>
-               <input type="email" value={user.email} id="email"  className=" ml-2 flex-1 border rounded-3xl p-1 px-3" />
+               <input type="email" value={newEmail} onChange={editMode ? (e)=> setNewEmail(e.target.value) : null} id="email"  className={`${editMode ? 'opacity-100' : 'opacity-70'} ml-2 flex-1 border rounded-3xl p-1 px-3`} />
             </div>
             <div className=" w-full flex items-center col-start-1">
                <label htmlFor="address">Shipping Address: </label>
-               <input type="text" id="address"  className=" ml-2 flex-1 border rounded-3xl p-1 px-3" />
+               <input type="text" value={newAddress} onChange={editMode ? (e)=> setNewAddress(e.target.value) : null} id="address"  className={`${editMode ? 'opacity-100' : 'opacity-70'} ml-2 flex-1 border rounded-3xl p-1 px-3`} />
             </div>
-            <button  className="p-1 w-1/4 h-full place-self-center text-lg rounded-full col-start-1 bg-brown text-offwhite hover:scale-105 active:scale-95" >Save</button>
+            <button onClick={()=> {editMode ? setEditMode(false) : setEditMode(true)}}  className={`${editMode ? 'bg-sageGreen' : 'bg-brown'} p-1 w-1/4 h-full place-self-center text-lg rounded-full col-start-1 bg-brown text-offwhite hover:scale-105 active:scale-95`} >{editMode ? 'Save Changes' : 'Edit Details'}</button>
          </section>
       </main>
    )
