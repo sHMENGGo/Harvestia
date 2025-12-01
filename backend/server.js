@@ -106,6 +106,14 @@ app.get('/api/logout', verifyToken, async (req, res)=> {
   	res.json({message: "Logged out successfully"})
 })
 
+// Get categories from database
+app.get('/api/getCategories', verifyToken, async (req, res)=> {
+  	try {
+    	const categories = await prisma.Category.findMany()
+    	res.status(200).json({ categories })
+  	} catch(err) {res.status(500).json({ error: 'Fetching Categories from database failed', err})}
+})
+
 // Add category to database
 app.post('/api/addCategory', verifyToken, verifyAdmin, async (req, res)=> {
   	const { inputCategory } = req.body
@@ -115,24 +123,31 @@ app.post('/api/addCategory', verifyToken, verifyAdmin, async (req, res)=> {
   	} catch(err) {res.status(500).json({ error: 'Posting Category to database failed', err})}
 })
 
-// Get categories from database
-app.get('/api/getCategories', verifyToken, async (req, res)=> {
-  	try {
-    	const categories = await prisma.Category.findMany()
-    	res.status(200).json({ categories })
-  	} catch(err) {res.status(500).json({ error: 'Fetching Categories from database failed', err})}
-})
-
 // Delete category from database
 app.delete('/api/deleteCategory', verifyToken, verifyAdmin, async (req, res)=> {
+	const {selectedCategory} = req.body
   	try {
-    	const {selectedCategory} = req.body
     	await prisma.Category.delete({where: {id: selectedCategory.id}})
     	res.status(200).json({message: 'Category deleted successfully!'})
   	} catch(err) {
     	console.error('Prisma error: ', err)
     	res.status(500).json({message: 'Category deletion failed', err})
   	}
+})
+
+// Edit category from database
+app.put('/api/editCategory', verifyToken, verifyAdmin, async (req, res)=> {
+	const {newInputCategory, categoryID} = req.body
+	try {
+		await prisma.Category.update({where: {id: categoryID},
+			data: {name: newInputCategory}
+		})
+		res.status(200).json({message: 'Category edited successfully'})
+	}
+	catch(err) {
+		console.error('Prisma error: ', err)
+	 	res.status(500).json({ message: 'Editing Category in database failed', err})
+	}
 })
 
 // Add rice to database
@@ -171,12 +186,11 @@ app.delete('/api/deleteRice', verifyToken, verifyAdmin, async (req, res)=> {
 })
 
 // Edit rice in database
-app.put('/api/editRice', verifyToken, verifyAdmin, uploadRiceImage.single('newImageFile'), async (req, res)=> {
-  	const {newInputRice, newInputCompany, selectedCategoryID, newInputPrice, newInputStock, newInputWeight, oldImageID, oldRiceID} = req.body
+app.put('/api/editRice', verifyToken, verifyAdmin, uploadRiceImage.single('newImageFile' || null), async (req, res)=> {
+  	const {newInputRice, newInputCompany, selectedCategoryID, newInputPrice, newInputStock, newInputWeight, oldImageID, riceID} = req.body
 	try {
-    	if (!req.file) {return res.status(400).json({message: 'No image upload'})}
 		if (oldImageID) {await cloudinary.uploader.destroy(oldImageID)}
-		await prisma.Rice.update({where: {id: parseInt(oldRiceID)},
+		await prisma.Rice.update({where: {id: parseInt(riceID)},
 			data: {
 				name: newInputRice,
 				company: newInputCompany,
@@ -184,8 +198,8 @@ app.put('/api/editRice', verifyToken, verifyAdmin, uploadRiceImage.single('newIm
 				price: parseFloat(newInputPrice),
 				stock: parseInt(newInputStock),
 				weightKG: parseFloat(newInputWeight),
-				imagePath: req.file.path,
-				imagePublicID: req.file.filename
+				imagePath: req.file?.path,
+				imagePublicID: req.file?.filename
 			}
 		})
 		res.status(200).json({message: 'Rice edited successfully!'})
