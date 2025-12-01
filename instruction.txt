@@ -3,7 +3,6 @@ Must have node v22.17.1 installed in your device.
 
 Development Start: Aug 27, 2025
 
-
 In terminal, run "npm i" to install all dependencies.
 
 Go to frontend folder and run 
@@ -12,5 +11,7 @@ Go to frontend folder and run
 
 Go to backend folder and run "npm start" to start backend.
 "npx prisma init --datasource-provider postgresql" to initialize prisma.
-"npx prisma generate" to create prisma client and everytime you modify schema.
+"npx prisma generate" to create prisma client.
+"npx prisma migrate status" checks if database schema is the same with prisma schema.
+"npx prisma migrate dev --name <migration-name>" creates a migration file and apply it to database.
 
