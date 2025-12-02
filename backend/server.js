@@ -33,6 +33,16 @@ const storageRiceImage = new CloudinaryStorage({
 })
 const uploadRiceImage = multer({storage: storageRiceImage})
 
+// Configure user profile image storage in cloudinary
+const storageProfileImage = new CloudinaryStorage({
+  	cloudinary: cloudinary,
+	params: {
+	 	folder: 'Profile-Image',
+	 	allowed_formats: ['jpg', 'jpeg', 'png', 'webp']
+  	}
+})
+const uploadProfileImage = multer({storage: storageProfileImage})
+
 // Verify login credentials in database and generate token
 app.post('/api/login', async (req, res) => {
   	const { userName, userPassword} = req.body
@@ -229,6 +239,33 @@ app.get('/api/getUsers', verifyToken, verifyAdmin, async (req, res)=>{
 })
 
 // Add user to database
-app.post('/api/addUser', verifyToken, async (req, res)=> {
-	
+app.post('/api/addUser', verifyToken, verifyAdmin, uploadProfileImage.single('profileFile'), async (req, res)=> {
+  	const {inputUserName, inputPassword, inputEmail, inputAddress, inputIsAdmin} = req.body
+	try {
+		await prisma.User.create({data: {
+			userName: inputUserName,
+			password: inputPassword,
+			email: inputEmail || null,
+			address: inputAddress || null,
+			isAdmin: Boolean(inputIsAdmin),
+			imagePath: req.file ? req.file.path : null,
+			imagePublicID: req.file ? req.file.filename : null
+		}})
+		res.status(201).json({ message: 'User created successfully!' })
+	} catch(err) {
+	 	console.error('Prisma error: ', err)
+	 	res.status(500).json({ message: 'Posting User to database failed', err})
+  	}
+})
+
+// Delete user from database
+app.delete('/api/deleteUser', verifyToken, verifyAdmin, async (req, res)=> {
+  	const {selectedUser} = req.body
+	try {
+	 	await prisma.User.delete({where: {id: selectedUser.id}})
+	 	res.status(200).json({message: 'User deleted successfully!'})
+  	} catch(err) {
+	 	console.error('Prisma error: ', err)
+	 	res.status(500).json({message: 'User deletion failed', err})
+  	}
 })

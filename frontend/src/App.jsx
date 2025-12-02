@@ -11,12 +11,15 @@ import { apiPost, apiGet, apiDelete, apiPut } from './components/api'
 export default function App() {
 	const [showAddCategoryModal, setShowAddCategoryModal] = useState(false)
 	const [showAddRiceModal, setShowAddRiceModal] = useState(false)
+	const [showAddUserModal, setShowAddUserModal] = useState(false)
 	const [showLogoutModal, setShowLogoutModal] = useState(false)
-	const [selectedRice, setSelectedRice] = useState('')
+	const [selectedRice, setSelectedRice] = useState(null)
 	const [showEditRiceModal, setShowEditRiceModal] = useState(false)
 	const [showEditCategoryModal, setShowEditCategoryModal] = useState(false)
 	const [showDeleteRiceModal, setShowDeleteRiceModal] = useState(false)
 	const [showDeleteCategoryModal, setShowDeleteCategoryModal] = useState(false)
+	const [selectedUser, setSelectedUser] = useState(null)
+	const [showDeleteUserModal, setShowDeleteUserModal] = useState(false)
 	const [refresh, setRefresh] = useState(false)
 	const hideSadbarOn = ['/login', '/register', '/recoverAccount']
 	const location = useLocation()
@@ -241,6 +244,56 @@ export default function App() {
 		})
 	}
 
+	// Function to add user
+	const [inputUserName, setInputUserName] = useState('')
+	const [inputPassword, setInputPassword] = useState('')
+	const [inputEmail, setInputEmail] = useState('')
+	const [inputAddress, setInputAddress] = useState('')
+	const [inputIsAdmin, setInputIsAdmin] = useState(false)
+	const [profilePreview, setProfilePreview] = useState(null)
+	const [profileFile, setProfileFile] = useState(null)
+	function addUser() {
+		const formData = new FormData()
+		formData.append('inputUserName', inputUserName)
+		formData.append('inputPassword', inputPassword)
+		formData.append('inputEmail', inputEmail || '')
+		formData.append('inputAddress', inputAddress || '')
+		formData.append('inputIsAdmin', inputIsAdmin)
+		formData.append('profileFile', profileFile || null)
+		apiPost('/addUser', formData).then((data)=> {
+			alert(data.message)
+			setShowAddUserModal(false)
+			setRefresh(prev => !prev)
+			setInputUserName('')
+			setInputPassword('')
+			setInputEmail('')
+			setInputAddress('')
+			setInputIsAdmin(false)
+			URL.revokeObjectURL(profilePreview)
+			setProfilePreview(null)
+		})
+	}
+	// Change profile file when uploaded profile changed
+	function profileOnChange(e) {
+		const image = e.target.files[0]
+		if(image) {
+			URL.revokeObjectURL(profilePreview)
+			setProfilePreview(URL.createObjectURL(image))
+			setProfileFile(image)
+		}
+	}
+
+	// Function to delete user
+	function deleteUser() {
+		apiDelete('/deleteUser', {selectedUser}).then((data)=> {
+			alert(data.message)
+			setShowDeleteUserModal(false)
+			setSelectedUser(null)
+			setRefresh(prev => !prev)
+		})
+	}
+	// 
+
 	// Prevent app to render if there's no user, wait for token checking
 	if(isLoading) return <div className="w-full top-0 flex justify-center items-center absolute h-full family-roboto"><p className='text-9xl opacity-50'>Loading...</p></div>
 
@@ -261,12 +314,15 @@ export default function App() {
 					<Route path='/admin' element={<Admin 
 						setShowAddCategoryModal={setShowAddCategoryModal} 
 						setShowAddRiceModal={setShowAddRiceModal} 
+						setShowAddUserModal={setShowAddUserModal}
 						setShowDeleteRiceModal={setShowDeleteRiceModal}
 						setShowEditRiceModal={setShowEditRiceModal}
 						setShowEditCategoryModal={setShowEditCategoryModal}
 						setShowDeleteCategoryModal={setShowDeleteCategoryModal}
+						setShowDeleteUserModal={setShowDeleteUserModal}
 						setSelectedRice={setSelectedRice}
 						setSelectedCategory={setSelectedCategory}
+						setSelectedUser={setSelectedUser}
 						users={users}
 						categories={categories}
 						totalUsers={totalUsers}
@@ -423,6 +479,59 @@ export default function App() {
 						</div>
 						<input type="submit" className=" p-2 px-3 w-full cursor-pointer rounded-full bg-brown hover:scale-103 active:scale-95 text-offwhite font-semibold text-lg" />
 					</form>
+				</main>
+			)}
+
+			{/* Add user form */}
+			{showAddUserModal && (
+				<main onClick={()=> setShowAddUserModal(false)}  className='absolute top-0 left-0 w-full h-full bg-neutral-950/70 flex justify-center items-center text-white' >
+					<form onSubmit={(e)=> {addUser(); e.preventDefault()}} onClick={(e)=> e.stopPropagation()}  className="w-2/3 gap-5 p-6 text-neutral-900 bg-khaki grid grid-cols-2 grid-rows-[auto] rounded-2xl shadow-2xl" >
+						<p className='text-2xl text-sageGreen font-bold col-span-2 place-self-center' >ADD USER</p>
+						<div className='border-2 border-sageGreen rounded-full row-span-8 w-full h-full' >{profilePreview ? (
+							<img src={profilePreview} alt="User Image.png" className='w-full h-full rounded-full' />
+							) : (<p className='flex justify-center items-center w-full h-full text-sageGreen opacity-50 text-4xl' >No Image Selected</p>)}
+						</div>
+						<div className='w-full relative flex'>
+							<label htmlFor="userImage"  className='w-1/3 text-center text-offwhite rounded-full p-2 px-3 cursor-pointer bg-brown hover:scale-105 active:scale-95' >Upload Image</label>
+							<input type="file" id="userImage" onChange={(e)=> profileOnChange(e)} accept='image/*'  className='hidden' />
+						</div>
+						<div className="w-full flex items-center">
+							<input type="text" value={inputUserName} onChange={(e)=> setInputUserName(e.target.value)} required name="userName" className="peer flex-1 border rounded-3xl p-2 px-3" />
+							<label htmlFor="userName"  className='text-lg select-none peer-focus:text-xs peer-valid:text-xs peer-focus:-mt-15 peer-valid:-mt-15 absolute ml-4 transition-all' >Username</label>
+						</div>
+						<div className="w-full flex items-center">
+							<input type="password" value={inputPassword} onChange={(e)=> setInputPassword(e.target.value)} required name="userPassword"  className="peer flex-1 border rounded-3xl p-2 px-3" />
+							<label htmlFor="userPassword" className='text-lg select-none peer-focus:text-xs peer-focus:-mt-15 peer-valid:text-xs peer-valid:-mt-15 absolute ml-4 transition-all' >Password</label>
+						</div>
+						<div className="w-full flex items-center">
+							<input type="text" value={inputEmail} onChange={(e)=> setInputEmail(e.target.value)} placeholder='' name="email" className="peer flex-1 border rounded-3xl p-2 px-3" />
+							<label htmlFor="email"  className='text-lg select-none peer-focus:text-xs peer-focus:-mt-15 peer-[:not(:placeholder-shown)]:text-xs peer-[:not(:placeholder-shown)]:-mt-15 absolute ml-4 transition-all' >Email</label>
+						</div>
+						<div className="w-full flex items-center">
+							<input type="text" value={inputAddress} onChange={(e)=> setInputAddress(e.target.value)} placeholder='' name="address" className="peer flex-1 border rounded-3xl p-2 px-3" />
+							<label htmlFor="address"  className='text-lg select-none peer-focus:text-xs peer-focus:-mt-15 peer-[:not(:placeholder-shown):valid]:text-xs peer-[:not(:placeholder-shown):valid]:-mt-15 absolute ml-4 transition-all' >Address</label>
+						</div>
+						<div className='w-full flex items-center'>
+							<input type="checkbox" checked={inputIsAdmin} onChange={(e)=> setInputIsAdmin(e.target.checked)} id="isAdmin" className='scale-150 ml-1 mr-2 cursor-pointer active:scale-130' />
+							<label htmlFor="isAdmin" className='text-lg select-none' >Admin</label>
+						</div>
+						<input type="submit" className=" p-2 px-3 w-full cursor-pointer rounded-full bg-brown hover:scale-103 active:scale-95 text-offwhite font-semibold text-lg" />
+					</form>
+				</main>
+			)}
+
+			{/* Delete user confirmation */}
+			{showDeleteUserModal && (
+				<main onClick={()=> {setShowDeleteUserModal(false); setSelectedUser(null)}}  className='absolute top-0 left-0 w-full h-full bg-gray-950/70 flex justify-center items-center text-neutral-900' >
+					<section onClick={(e)=> e.stopPropagation()}  className="p-10 gap-10 min-w-1/4 justify-center relative bg-khaki flex flex-col rounded-2xl items-center shadow-2xl" >
+						<p  className='text-2xl text-sageGreen font-bold' >DELETE USER</p>
+						<p className='text-6xl text-sageGreen font-semibold' >{selectedUser.userName}</p>
+						<p className='text-3xl text-sageGreen -mt-10' >{selectedUser.isAdmin === true ? 'Admin' : 'Customer'}</p>
+						<div className='w-full flex justify-around items-center'>
+							<button onClick={()=> deleteUser()}  className="p-1 w-1/3 text-lg hover:scale-105 active:scale-95 font-bold rounded-3xl bg-red-500 text-offwhite" >Delete</button>
+							<button onClick={()=> setShowDeleteUserModal(false)}  className="p-1 w-1/3 text-lg hover:scale-105 active:scale-95 font-bold rounded-3xl bg-blue-500 text-offwhite" >Cancel</button>
+						</div>
+					</section>
 				</main>
 			)}
 

@@ -1,15 +1,18 @@
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
-import { faEdit, faTrash } from "@fortawesome/free-solid-svg-icons"
+import { faEdit, faTrash, faUser } from "@fortawesome/free-solid-svg-icons"
 
 export default function admin({
 	setShowAddCategoryModal, 
 	setSelectedCategory, 
 	setShowDeleteCategoryModal, 
 	setShowAddRiceModal, 
+	setShowAddUserModal,
 	setShowDeleteRiceModal, 
+	setShowDeleteUserModal,
 	setShowEditRiceModal,
 	setShowEditCategoryModal,
 	setSelectedRice, 
+	setSelectedUser,
 	users, 
 	totalUsers, 
 	categories,
@@ -88,31 +91,36 @@ export default function admin({
 
 			{/* User Section */}
 			<section className="backdrop-blur-2xl bg-khaki border-l-5 border-brown p-2 shadow-2xl rounded-lg w-full h-full flex col-span-4 flex-col" >
-				<p className="text-2xl opacity-70 w-full text-center mb-3">USER</p><p onClick={()=> setShowAddRiceModal(true)}  className="absolute bg-brown right-5 top-3 text-offwhite p-1 px-10 rounded-lg hover:scale-105 active:scale-95 font-semibold text-center cursor-pointer" >Add User</p>
+				<p className="text-2xl opacity-70 w-full text-center mb-3">USER</p><p onClick={()=> setShowAddUserModal(true)}  className="absolute bg-brown right-5 top-3 text-offwhite p-1 px-10 rounded-lg hover:scale-105 active:scale-95 font-semibold text-center cursor-pointer" >Add User</p>
 				<input type="text" placeholder="Search user"  className="absolute p-1 rounded top-2 left-2 border border-neutral-900/50 hover:border-neutral-900 focus:outline-1 w-[30%]" />
 				<table>
 					<thead className="border-b-2 border-neutral-900/50 border-t-2 text-xl text-sageGreen">
 						<tr>
+							<td></td>
 							<th>User Name</th>
 							<th>Password</th>
 							<th>Email</th>
 							<th>Admin</th>
 							<th>Adress</th>
-							<th>Image Path</th>
 						</tr>
 					</thead>
-					<tbody className="text-center">
+					<tbody className="text-center items-center">
 						{users.map((user) => (
 							<tr key={user.id} className="border-b border-gray-400/20 hover:bg-neutral-400/20">
+								<td className=" w-[6%] p-1" >
+									{user.imagePath ? (
+										<img src={user.imagePath} alt="Profile Image" className="border border-sageGreen rounded" />
+										) : (<FontAwesomeIcon icon={faUser} className="text-3xl text-neutral-600/50" />)
+									}
+								</td>
 								<td>{user.userName}</td>
 								<td>{user.password}</td>
 								<td>{user.email}</td>
 								<td>{String(user.isAdmin)}</td>
 								<td>{user.address}</td>
-								<td>{user.imagePath}</td>
 								<td className="flex-row flex justify-center">
 									<p className=" text-xl p-1 rounded-lg hover:text-blue-500 hover:scale-110 font-semibold cursor-pointer" ><FontAwesomeIcon icon={faEdit}/></p>
-									<p className=" text-xl p-1 rounded-lg hover:text-red-500 hover:scale-110 font-semibold cursor-pointer" ><FontAwesomeIcon icon={faTrash} onClick={()=> {setShowDeleteRiceModal(true); setSelectedRice(rice)}} /></p>
+									<p className=" text-xl p-1 rounded-lg hover:text-red-500 hover:scale-110 font-semibold cursor-pointer" ><FontAwesomeIcon icon={faTrash} onClick={()=> {setShowDeleteUserModal(true); setSelectedUser(user)}} /></p>
 								</td>
 							</tr>
 						))}
