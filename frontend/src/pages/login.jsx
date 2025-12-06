@@ -10,8 +10,12 @@ export default function login({loggedIn}) {
 	const [userName, setUserName] = useState('')
 	const [userPassword, setUserPassword] = useState('')
 	const [validLogin, setValidLogin] = useState(false)
+	const [loginError, setLoginError] = useState('')
 	function verifyLogin() {
-		apiPost('/login', {userName, userPassword}).then((data)=> setValidLogin(data.validLogin))
+		apiPost('/login', {userName, userPassword}).then((data)=> {
+			if(data.error) setLoginError(data.error)
+			setValidLogin(data.validLogin)
+		})
 	}
 
 	const [showPswrd, setShowPswrd] = useState(false)
@@ -28,7 +32,8 @@ export default function login({loggedIn}) {
 				<input type={showPswrd === true ? "text" : "password"} value={userPassword} onChange={(e)=> setUserPassword(e.target.value)} required name="userPassword" className="peer flex-1 border border-khaki rounded-3xl p-2 pl-4"  />
 				<label htmlFor="userPassword" className=" text-lg select-none peer-focus:text-xs peer-valid:text-xs peer-focus:-mt-15 peer-valid:-mt-15 absolute ml-4 transition-all">Password</label>
 			</div>
-			<div className="flex mt-2 w-full relative">
+			<p className=' text-red-500 text-sm mt-1'>{loginError}</p>
+			<div className="flex w-full relative mt-2">
 				<input type="checkbox" name="rememberMe" className="scale-120 left-0 mr-1 cursor-pointer" />
 				<label htmlFor="rememberMe" className='text-xs lg:text-[1rem]' >Remember me</label>
 				<p   className="right-0 font-normal absolute text-white cursor-pointer hover:text-blue-500 text-xs lg:text-[1rem]">Forgot Password?</p>

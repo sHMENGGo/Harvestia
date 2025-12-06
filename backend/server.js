@@ -7,6 +7,7 @@ import multer from 'multer'
 import { v2 as cloudinary } from 'cloudinary'
 import { CloudinaryStorage } from 'multer-storage-cloudinary'
 import { prisma } from './lib/prisma'
+import { error } from 'console'
 dotenv.config()
 
 // Create App server
@@ -48,7 +49,7 @@ app.post('/api/login', async (req, res) => {
   	const { userName, userPassword} = req.body
   	try {
     	const user = await prisma.User.findUnique({ where: {userName} })
-    	if(!user || user.password !== userPassword) return res.status(401).json({ error: 'Invalid credentials' })
+    	if(!user || user.password !== userPassword) return res.status(401).json({ error: 'Incorrect username or password' })
     	const accessToken = jwt.sign({ userID: user.id, userName: user.userName, isAdmin: user.isAdmin }, process.env.JWT_SECRET_KEY, { expiresIn: '30m'})
     	const refreshToken = jwt.sign({ userID: user.id, userName: user.userName, isAdmin: user.isAdmin }, process.env.JWT_SECRET_KEY, { expiresIn: '1h'})
     
@@ -199,19 +200,20 @@ app.delete('/api/deleteRice', verifyToken, verifyAdmin, async (req, res)=> {
 app.put('/api/editRice', verifyToken, verifyAdmin, uploadRiceImage.single('newImageFile' || null), async (req, res)=> {
   	const {newInputRice, newInputCompany, selectedCategoryID, newInputPrice, newInputStock, newInputWeight, oldImageID, riceID} = req.body
 	try {
-		if (oldImageID) {await cloudinary.uploader.destroy(oldImageID)}
-		await prisma.Rice.update({where: {id: parseInt(riceID)},
-			data: {
-				name: newInputRice,
-				company: newInputCompany,
-				categoryID: parseInt(selectedCategoryID),
-				price: parseFloat(newInputPrice),
-				stock: parseInt(newInputStock),
-				weightKG: parseFloat(newInputWeight),
-				imagePath: req.file?.path,
-				imagePublicID: req.file?.filename
-			}
-		})
+		const updateData = {
+			name: newInputRice,
+			company: newInputCompany,
+			categoryID: parseInt(selectedCategoryID),
+			price: parseFloat(newInputPrice),
+			stock: parseInt(newInputStock),
+			weightKG: parseFloat(newInputWeight)
+		}
+		if (req.file && req.file.path) {
+			await cloudinary.uploader.destroy(oldImageID)
+			updateData.imagePath = req.file.path
+			updateData.imagePublicID = req.file.filename
+		}
+		await prisma.Rice.update({where: {id: parseInt(riceID)}, data: updateData})
 		res.status(200).json({message: 'Rice edited successfully!'})
 	} catch(err) {
 	 	console.error('Prisma error: ', err)
@@ -267,5 +269,29 @@ app.delete('/api/deleteUser', verifyToken, verifyAdmin, async (req, res)=> {
   	} catch(err) {
 	 	console.error('Prisma error: ', err)
 	 	res.status(500).json({message: 'User deletion failed', err})
+  	}
+})
+
+// Edit user in database
+app.put('/api/editUser', verifyToken, verifyAdmin, uploadProfileImage.single('newProfileFile'), async (req, res)=> {
+  	const {newInputUserName, newInputPassword, newInputEmail, newInputAddress, newInputIsAdmin, oldProfileID, userID} = req.body
+	try {
+		const updateData = {
+			userName: newInputUserName || null,
+			password: newInputPassword || null,
+			email: newInputEmail || null,
+			address: newInputAddress || null,
+			isAdmin: Boolean(newInputIsAdmin) || false
+		}
+		if (req.file && req.file.path) {
+			await cloudinary.uploader.destroy(oldProfileID)
+			updateData.imagePath = req.file.path
+			updateData.imagePublicID = req.file.filename
+		}
+		await prisma.User.update({where: {id: parseInt(userID)}, data: updateData})
+		res.status(200).json({message: 'User edited successfully!'})
+	} catch(err) {
+	 	console.error('Prisma error: ', err)
+	 	res.status(500).json({ message: 'Editing User in database failed', err})
   	}
 })

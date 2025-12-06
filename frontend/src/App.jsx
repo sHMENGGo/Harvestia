@@ -7,6 +7,9 @@ import Home from './pages/home'
 import Admin from './pages/admin'
 import Profile from './pages/profile'
 import { apiPost, apiGet, apiDelete, apiPut } from './components/api'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { faCircleXmark } from '@fortawesome/free-solid-svg-icons'
+import imageCompression from 'browser-image-compression'
 
 export default function App() {
 	const [showAddCategoryModal, setShowAddCategoryModal] = useState(false)
@@ -16,6 +19,7 @@ export default function App() {
 	const [selectedRice, setSelectedRice] = useState(null)
 	const [showEditRiceModal, setShowEditRiceModal] = useState(false)
 	const [showEditCategoryModal, setShowEditCategoryModal] = useState(false)
+	const [showEditUserModal, setShowEditUserModal] = useState(false)
 	const [showDeleteRiceModal, setShowDeleteRiceModal] = useState(false)
 	const [showDeleteCategoryModal, setShowDeleteCategoryModal] = useState(false)
 	const [selectedUser, setSelectedUser] = useState(null)
@@ -24,6 +28,10 @@ export default function App() {
 	const hideSadbarOn = ['/login', '/register', '/recoverAccount']
 	const location = useLocation()
 	const navigate = useNavigate()
+	const options = {
+		maxWidthOrHeight: 1920,
+		useWebWorker: true
+	}
 
 	// Set value to sidebar and value to home
 	const [showCategory, setShowCategory] = useState(0)
@@ -162,12 +170,13 @@ export default function App() {
 		})
 	}
 	// Change image file when uploaded image changed
-	function imageOnChange(e) {
+	async function imageOnChange(e) {
 		const image = e.target.files[0]
-		if(image) {
+		const squaredImage = await imageCompression(image, options)
+		if(squaredImage) {
 			URL.revokeObjectURL(imagePreview)
-			setImagePreview(URL.createObjectURL(image))
-			setImageFile(image)
+			setImagePreview(URL.createObjectURL(squaredImage))
+			setImageFile(squaredImage)
 		}
 		else setImageFile(null)
 	}
@@ -203,12 +212,13 @@ export default function App() {
 		setNewImagePreview(selectedRice.imagePath || '')
 	}, [selectedRice])
 	// Change new image file when uploaded image changed
-	function newImageOnChange(e) {
+	async function newImageOnChange(e) {
 		const image = e.target.files[0]
-		if(image) {
+		const squaredImage = await imageCompression(image, options)
+		if(squaredImage) {
 			URL.revokeObjectURL(newImagePreview)
-			setNewImagePreview(URL.createObjectURL(image))
-			setNewImageFile(image)
+			setNewImagePreview(URL.createObjectURL(squaredImage))
+			setNewImageFile(squaredImage)
 		}
 	}
 
@@ -274,12 +284,13 @@ export default function App() {
 		})
 	}
 	// Change profile file when uploaded profile changed
-	function profileOnChange(e) {
+	async function profileOnChange(e) {
 		const image = e.target.files[0]
-		if(image) {
+		const squaredImage = await imageCompression(image, options)
+		if(squaredImage) {
 			URL.revokeObjectURL(profilePreview)
-			setProfilePreview(URL.createObjectURL(image))
-			setProfileFile(image)
+			setProfilePreview(URL.createObjectURL(squaredImage))
+			setProfileFile(squaredImage)
 		}
 	}
 
@@ -292,7 +303,61 @@ export default function App() {
 			setRefresh(prev => !prev)
 		})
 	}
-	// 
+	
+	// New variables for editing user
+	const [newInputUserName, setNewInputUserName] = useState('')
+	const [newInputPassword, setNewInputPassword] = useState('')
+	const [newInputEmail, setNewInputEmail] = useState('')
+	const [newInputAddress, setNewInputAddress] = useState('')
+	const [newInputIsAdmin, setNewInputIsAdmin] = useState('')
+	const [newProfilePreview, setNewProfilePreview] = useState(null)
+	const [newProfileFile, setNewProfileFile] = useState(null)
+	useEffect(()=> {
+		if(!selectedUser) return
+		setNewInputUserName(selectedUser.userName || '')
+		setNewInputPassword(selectedUser.password || '')
+		setNewInputEmail(selectedUser.email || '')
+		setNewInputAddress(selectedUser.adress || '')
+		setNewInputIsAdmin(selectedUser.isAdmin || false)
+		setNewProfilePreview(selectedUser.imagePath || null)
+	}, [selectedUser])
+	// Change new profile file when uploaded profile picture changed
+	async function newProfileOnChange(e) {
+		const image = e.target.files[0]
+		const squaredImage = await imageCompression(image, options)
+		if(squaredImage) {
+			URL.revokeObjectURL(newProfilePreview)
+			setNewProfilePreview(URL.createObjectURL(squaredImage))
+			setNewProfileFile(squaredImage)
+		}
+	}
+
+	// Function to edit user
+	function editUser() {
+		const formData = new FormData()
+		formData.append('newInputUserName', newInputUserName || '')
+		formData.append('newInputPassword', newInputPassword || '')
+		formData.append('newInputEmail', newInputEmail || '')
+		formData.append('newInputAddress', newInputAddress || '')
+		formData.append('newInputIsAdmin', newInputIsAdmin || false)
+		formData.append('oldProfileID', selectedUser.imagePublicID || null)
+		formData.append('userID', selectedUser.id || null)
+		formData.append('newProfileFile', newProfileFile || null)
+		apiPut('/editUser', formData).then((data)=> {
+			alert(data.message)
+			setRefresh(prev => !prev)
+			setShowEditUserModal(false)
+			setNewInputUserName('')
+			setNewInputPassword('')
+			setNewInputEmail('')
+			setNewInputAddress('')
+			setNewInputIsAdmin(false)
+			setNewProfileFile(null)
+			setSelectedUser(null)
+			URL.revokeObjectURL(newProfilePreview)
+			setNewProfilePreview(null)
+		})
+	}
 
 	// Prevent app to render if there's no user, wait for token checking
 	if(isLoading) return <div className="w-full top-0 flex justify-center items-center absolute h-full family-roboto"><p className='text-9xl opacity-50'>Loading...</p></div>
@@ -318,6 +383,7 @@ export default function App() {
 						setShowDeleteRiceModal={setShowDeleteRiceModal}
 						setShowEditRiceModal={setShowEditRiceModal}
 						setShowEditCategoryModal={setShowEditCategoryModal}
+						setShowEditUserModal={setShowEditUserModal}
 						setShowDeleteCategoryModal={setShowDeleteCategoryModal}
 						setShowDeleteUserModal={setShowDeleteUserModal}
 						setSelectedRice={setSelectedRice}
@@ -393,7 +459,7 @@ export default function App() {
 						</div>
 						<div className='w-full relative flex'>
 							<label htmlFor="riceImage"  className='w-1/3 text-center text-offwhite rounded-full p-2 px-3 cursor-pointer bg-brown hover:scale-105 active:scale-95' >Upload Image</label>
-							<input type="file" id="riceImage" onChange={(e)=> imageOnChange(e)} accept='image/*'  className='hidden' />
+							<input type="file" id="riceImage" onChange={(e)=> imageOnChange(e)} accept='image/*' required  className='hidden' />
 						</div>
 						<div className="w-full flex items-center">
 							<input type="text" value={inputRice} onChange={(e)=> setInputRice(e.target.value)} required name="riceName" className="peer flex-1 border rounded-3xl p-2 px-3" />
@@ -487,9 +553,11 @@ export default function App() {
 				<main onClick={()=> setShowAddUserModal(false)}  className='absolute top-0 left-0 w-full h-full bg-neutral-950/70 flex justify-center items-center text-white' >
 					<form onSubmit={(e)=> {addUser(); e.preventDefault()}} onClick={(e)=> e.stopPropagation()}  className="w-2/3 gap-5 p-6 text-neutral-900 bg-khaki grid grid-cols-2 grid-rows-[auto] rounded-2xl shadow-2xl" >
 						<p className='text-2xl text-sageGreen font-bold col-span-2 place-self-center' >ADD USER</p>
-						<div className='border-2 border-sageGreen rounded-full row-span-8 w-full h-full' >{profilePreview ? (
-							<img src={profilePreview} alt="User Image.png" className='w-full h-full rounded-full' />
-							) : (<p className='flex justify-center items-center w-full h-full text-sageGreen opacity-50 text-4xl' >No Image Selected</p>)}
+						<div className='border-2 border-sageGreen rounded-full row-span-8 w-full h-full' >
+							{profilePreview ? (
+								<img src={profilePreview} alt="User Image.png" className='w-full h-full rounded-full' />
+								) : (<p className='flex justify-center items-center w-full h-full text-sageGreen opacity-50 text-4xl' >No image Selected</p>)
+							}
 						</div>
 						<div className='w-full relative flex'>
 							<label htmlFor="userImage"  className='w-1/3 text-center text-offwhite rounded-full p-2 px-3 cursor-pointer bg-brown hover:scale-105 active:scale-95' >Upload Image</label>
@@ -532,6 +600,49 @@ export default function App() {
 							<button onClick={()=> setShowDeleteUserModal(false)}  className="p-1 w-1/3 text-lg hover:scale-105 active:scale-95 font-bold rounded-3xl bg-blue-500 text-offwhite" >Cancel</button>
 						</div>
 					</section>
+				</main>
+			)}
+
+			{/* Edit user form */}
+			{showEditUserModal && (
+				<main onClick={()=> {setShowEditUserModal(false); setSelectedUser(null)}}  className='absolute top-0 left-0 w-full h-full bg-neutral-950/70 flex justify-center items-center text-white' >
+					<form onSubmit={(e)=> {editUser(); e.preventDefault()}} onClick={(e)=> e.stopPropagation()}  className="w-2/3 gap-5 p-6 text-neutral-900 bg-khaki grid grid-cols-2 grid-rows-[auto] rounded-2xl shadow-2xl" >
+						<p className='text-2xl text-sageGreen font-bold col-span-2 place-self-center' >EDIT USER</p>
+						<div className='border-2 border-sageGreen rounded-full row-span-8 w-full h-full relative select-none' >
+							{newProfilePreview ? (
+								<>
+								<img src={newProfilePreview} alt="User Image.png" className='w-full h-full rounded-full' />
+								<FontAwesomeIcon icon={faCircleXmark} className='text-3xl  text-sageGreen top-[7%] absolute right-[7%] cursor-pointer active:scale-90' />
+								</>
+								) : (<p className='flex justify-center items-center w-full h-full text-sageGreen opacity-50 text-4xl' >No image uploaded</p>)
+							}
+						</div>
+						<div className='w-full relative flex'>
+							<label htmlFor="userImage"  className='w-1/3 text-center text-offwhite rounded-full p-2 px-3 cursor-pointer bg-brown hover:scale-105 active:scale-95' >Upload Image</label>
+							<input type="file" id="userImage" onChange={(e)=> newProfileOnChange(e)} accept='image/*'  className='hidden' />
+						</div>
+						<div className="w-full flex items-center">
+							<input type="text" value={newInputUserName} onChange={(e)=> setNewInputUserName(e.target.value)} required name="userName" className="peer flex-1 border rounded-3xl p-2 px-3" />
+							<label htmlFor="userName"  className='text-lg select-none peer-focus:text-xs peer-valid:text-xs peer-focus:-mt-15 peer-valid:-mt-15 absolute ml-4 transition-all' >Username</label>
+						</div>
+						<div className="w-full flex items-center">
+							<input type="password" value={newInputPassword} onChange={(e)=> setNewInputPassword(e.target.value)} required name="userPassword"  className="peer flex-1 border rounded-3xl p-2 px-3" />
+							<label htmlFor="userPassword" className='text-lg select-none peer-focus:text-xs peer-focus:-mt-15 peer-valid:text-xs peer-valid:-mt-15 absolute ml-4 transition-all' >Password</label>
+						</div>
+						<div className="w-full flex items-center">
+							<input type="text" value={newInputEmail} onChange={(e)=> setNewInputEmail(e.target.value)} placeholder='' name="email" className="peer flex-1 border rounded-3xl p-2 px-3" />
+							<label htmlFor="email"  className='text-lg select-none peer-focus:text-xs peer-focus:-mt-15 peer-[:not(:placeholder-shown)]:text-xs peer-[:not(:placeholder-shown)]:-mt-15 absolute ml-4 transition-all' >Email</label>
+						</div>
+						<div className="w-full flex items-center">
+							<input type="text" value={newInputAddress} onChange={(e)=> setNewInputAddress(e.target.value)} placeholder='' name="address" className="peer flex-1 border rounded-3xl p-2 px-3" />
+							<label htmlFor="address"  className='text-lg select-none peer-focus:text-xs peer-focus:-mt-15 peer-[:not(:placeholder-shown):valid]:text-xs peer-[:not(:placeholder-shown):valid]:-mt-15 absolute ml-4 transition-all' >Address</label>
+						</div>
+						<div className='w-full flex items-center'>
+							<input type="checkbox" checked={newInputIsAdmin} onChange={(e)=> setNewInputIsAdmin(e.target.checked)} id="isAdmin" className='scale-150 ml-1 mr-2 cursor-pointer active:scale-130' />
+							<label htmlFor="isAdmin" className='text-lg select-none' >Admin</label>
+						</div>
+						<input type="submit" className=" p-2 px-3 w-full cursor-pointer rounded-full bg-brown hover:scale-103 active:scale-95 text-offwhite font-semibold text-lg" />
+					</form>
 				</main>
 			)}
 

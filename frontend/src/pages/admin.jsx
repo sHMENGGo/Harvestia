@@ -11,6 +11,7 @@ export default function admin({
 	setShowDeleteUserModal,
 	setShowEditRiceModal,
 	setShowEditCategoryModal,
+	setShowEditUserModal,
 	setSelectedRice, 
 	setSelectedUser,
 	users, 
@@ -106,10 +107,10 @@ export default function admin({
 					</thead>
 					<tbody className="text-center items-center">
 						{users.map((user) => (
-							<tr key={user.id} className="border-b border-gray-400/20 hover:bg-neutral-400/20">
-								<td className=" w-[6%] p-1" >
+							<tr key={user.id} className="border-b border-gray-400/20 hover:bg-neutral-400/20 h-15">
+								<td className=" w-[5%] relative" >
 									{user.imagePath ? (
-										<img src={user.imagePath} alt="Profile Image" className="border border-sageGreen rounded" />
+										<img src={user.imagePath} alt="Profile Image" className="border border-sageGreen rounded w-full aspect-square place-self-center absolute" />
 										) : (<FontAwesomeIcon icon={faUser} className="text-3xl text-neutral-600/50" />)
 									}
 								</td>
@@ -119,7 +120,7 @@ export default function admin({
 								<td>{String(user.isAdmin)}</td>
 								<td>{user.address}</td>
 								<td className="flex-row flex justify-center">
-									<p className=" text-xl p-1 rounded-lg hover:text-blue-500 hover:scale-110 font-semibold cursor-pointer" ><FontAwesomeIcon icon={faEdit}/></p>
+									<p className=" text-xl p-1 rounded-lg hover:text-blue-500 hover:scale-110 font-semibold cursor-pointer" ><FontAwesomeIcon icon={faEdit} onClick={()=> {setShowEditUserModal(true); setSelectedUser(user)}}/></p>
 									<p className=" text-xl p-1 rounded-lg hover:text-red-500 hover:scale-110 font-semibold cursor-pointer" ><FontAwesomeIcon icon={faTrash} onClick={()=> {setShowDeleteUserModal(true); setSelectedUser(user)}} /></p>
 								</td>
 							</tr>
