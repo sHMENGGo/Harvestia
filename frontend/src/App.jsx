@@ -39,55 +39,53 @@ export default function App() {
 	// Check if theres's existing token
 	const [user, setUser] = useState(null)
 	const [isLoading, setIsLoading] = useState(true)
+	const [validLogin, setValidLogin] = useState(false)
 	useEffect(()=> {
 		const checkToken = async ()=> {
 			try {
 				console.log("Checking token...")
 				const data = await apiGet('/verifyToken')
-				console.log("Current user: ", data.user)
 				if(data.user) {
-					setLoggedIn(true)
+					setValidLogin(true)
 					setUser(data.user)
 					console.log(data.message)
 				}
 				else {
-					console.log('No user, going to login page...')
+					setValidLogin(false)
+					console.log("No user found, please login")
 				}
 			} catch(err) {
 				console.error('Checking token failed ', err)
-				setLoggedIn(false)
+				setValidLogin(false)
 			} finally {setIsLoading(false)}
 		}
 		checkToken()
-	}, [refresh])
+	}, [refresh, validLogin])
 
 	// Redirect to login page if there's no token
-	const [loggedIn, setLoggedIn] = useState(null)
 	useEffect(()=> {
-		if(loggedIn === false) {
-			console.log('No token exist, going to login')
-			navigate('/login', {replace:true})
- 		} else {navigate('/admin', {replace:true})}
-	}, [loggedIn])
+		if(validLogin === true) {navigate('/profile', {replace:true})}
+		else {navigate('/login', {replace:true})}
+	}, [validLogin])
 
 	// Fetch categories from the server
 	const [categories, setCategories] = useState([])
 	useEffect(()=> {
-		if(loggedIn) {apiGet('/getCategories').then((data)=> {setCategories(data.categories)})}
-	}, [loggedIn, refresh])
+		if(validLogin) {apiGet('/getCategories').then((data)=> {setCategories(data.categories)})}
+	}, [validLogin, refresh])
 
 	// Fetch Users from server
 	const [users, setUsers] = useState([])
 	useEffect(()=> {
-		if(loggedIn) {apiGet('/getUsers').then((data)=> setUsers(data.users))}
-	}, [loggedIn, refresh])
+		if(validLogin) {apiGet('/getUsers').then((data)=> setUsers(data.users))}
+	}, [validLogin, refresh])
 	const totalUsers = users.length
 
 	// Fetch rices from server
 	const [rices, setRices] = useState([])
 	useEffect(()=> {
-		if(loggedIn) {apiGet('/getRices').then((data)=> setRices(data.rices))}
-	}, [loggedIn, refresh])
+		if(validLogin) {apiGet('/getRices').then((data)=> setRices(data.rices))}
+	}, [validLogin, refresh])
 	const totalRices = rices.length
 
 	// Send category to the server
@@ -362,19 +360,27 @@ export default function App() {
 	// Prevent app to render if there's no user, wait for token checking
 	if(isLoading) return <div className="w-full top-0 flex justify-center items-center absolute h-full family-roboto"><p className='text-9xl opacity-50'>Loading...</p></div>
 
+	function logout() {
+		apiGet('/logout')
+		setValidLogin(false)
+		setShowLogoutModal(false)
+		navigate('/login', {replace:true})
+	}
+
    return(
 		<main className="flex w-full family-roboto absolute justify-center items-center top-0 text-neutral-900 bg-[url('./assets/riceBG.jpg')] bg-center bg-cover">
 			<section className="w-[80%] left-[10%] h-screen overflow-auto relative text-neutral-900">
 				<Routes>
-					<Route path='/' element={<Navigate to={loggedIn ? '/home' : '/login'} replace />} />
-					<Route path='/login' element={<Login setLoggedIn={setLoggedIn} />}/>
+					<Route path='/' element={<Navigate to={validLogin ? '/home' : '/login'} replace />} />
+					<Route path='/login' element={<Login setValidLogin={setValidLogin} validLogin={validLogin} />}/>
 					<Route path='/register' element={<Navigate to='/login'/>}/>
 					<Route path='/recoverAccount' element={<Navigate to='/login'/>}/>
 					<Route path='/dashboard' element={<Dashboard />}/>
-					<Route path='/profile' element={<Profile user={user} />}/>
+					<Route path='/profile' element={<Profile user={user} setShowLogoutModal={setShowLogoutModal} options={options} setRefresh={setRefresh} />}/>
 					<Route path='/home' element={<Home 
 						showCategory={showCategory} 
 						rices={rices}
+						setRefresh={setRefresh}
 					/>} />
 					<Route path='/admin' element={<Admin 
 						setShowAddCategoryModal={setShowAddCategoryModal} 
@@ -415,7 +421,7 @@ export default function App() {
 							<input type="text" value={inputCategory} onChange={(e)=> setInputCategory(e.target.value)} required name="inputCategory" className="peer flex-1 border rounded-3xl p-2 px-3" />
 							<label htmlFor="inputCategory"  className='text-lg select-none peer-focus:text-xs peer-valid:text-xs peer-focus:-mt-15 peer-valid:-mt-15 absolute ml-4 transition-all' >Category Name</label>
 						</div>
-						<input type="submit" className=" p-2 px-3 w-full cursor-pointer rounded-full bg-brown hover:scale-105 active:scale-95 text-offwhite font-semibold" />
+						<input type="submit" className=" p-2 px-3 w-full cursor-pointer rounded-full bg-brown text-offwhite font-semibold" />
 					</form>
 				</main>
 			)}
@@ -427,8 +433,8 @@ export default function App() {
 						<p  className='text-2xl text-sageGreen font-bold' >DELETE CATEGORY</p>
 						<p className='text-6xl text-sageGreen font-semibold' >{selectedCategory.name}</p>
 						<div className='w-full flex justify-around items-center'>
-							<button onClick={()=> deleteCategory()}  className="p-1 w-1/3 text-lg hover:scale-105 active:scale-95 font-bold rounded-3xl bg-red-500 text-offwhite" >Delete</button>
-							<button onClick={()=> {setShowDeleteCategoryModal(false); setSelectedCategory(null)}}  className="p-1 w-1/3 text-lg hover:scale-105 active:scale-95 font-bold rounded-3xl bg-blue-500 text-offwhite" >Cancel</button>
+							<button onClick={()=> deleteCategory()}  className="p-1 w-1/3 text-lg font-bold rounded-3xl bg-red-500 text-offwhite" >Delete</button>
+							<button onClick={()=> {setShowDeleteCategoryModal(false); setSelectedCategory(null)}}  className="p-1 w-1/3 text-lg font-bold rounded-3xl bg-blue-500 text-offwhite" >Cancel</button>
 						</div>
 					</section>
 				</main>
@@ -443,7 +449,7 @@ export default function App() {
 							<input type="text" value={newInputCategory} onChange={(e)=> setNewInputCategory(e.target.value)} required  className="peer flex-1 border rounded-3xl p-2 px-3" />
 							<label htmlFor="inputCategory"  className='text-lg select-none peer-focus:text-xs peer-valid:text-xs peer-focus:-mt-15 peer-valid:-mt-15 absolute ml-4 transition-all' >Category Name</label>
 						</div>
-						<input type="submit" className=" p-2 px-3 w-full cursor-pointer rounded-full bg-brown hover:scale-105 active:scale-95 text-offwhite font-semibold" />
+						<input type="submit" className=" p-2 px-3 w-full rounded-full bg-brown text-offwhite font-semibold" />
 					</form>
 				</main>
 			)}
@@ -458,7 +464,7 @@ export default function App() {
 							) : (<p className='flex justify-center items-center w-full h-full text-sageGreen opacity-50 text-4xl' >No Image Selected</p>)}
 						</div>
 						<div className='w-full relative flex'>
-							<label htmlFor="riceImage"  className='w-1/3 text-center text-offwhite rounded-full p-2 px-3 cursor-pointer bg-brown hover:scale-105 active:scale-95' >Upload Image</label>
+							<label htmlFor="riceImage"  className='w-1/3 text-center text-offwhite rounded-full p-2 px-3 cursor-pointer bg-brown hover:scale-103 active:scale-100' >Upload Image</label>
 							<input type="file" id="riceImage" onChange={(e)=> imageOnChange(e)} accept='image/*' required  className='hidden' />
 						</div>
 						<div className="w-full flex items-center">
@@ -487,7 +493,7 @@ export default function App() {
 							<input type="text" value={inputWeight} onChange={(e)=> setInputWeight(e.target.value)} name="weight" placeholder=' '  className="peer flex-1 border rounded-3xl p-2 px-3" />
 							<label htmlFor="weight" className='text-lg select-none peer-focus:text-xs peer-focus:-mt-15 peer-[&:not(:placeholder-shown)]:text-xs peer-[&:not(:placeholder-shown)]:-mt-15 absolute ml-4 transition-all' >Weight in KG</label>
 						</div>
-						<input type="submit" className=" p-2 px-3 w-full cursor-pointer rounded-full bg-brown hover:scale-103 active:scale-95 text-offwhite font-semibold text-lg" />
+						<input type="submit" className=" p-2 px-3 w-full rounded-full bg-brown text-offwhite font-semibold text-lg" />
 					</form>
 				</main>
 			)}
@@ -500,8 +506,8 @@ export default function App() {
 						<p className='text-6xl text-sageGreen font-semibold' >{selectedRice.name}</p>
 						<p className='text-sageGreen text-3xl -mt-10'>{selectedRice.company}</p>
 						<div className='w-full flex justify-around items-center'>
-							<button onClick={()=> deleteRice()}  className="p-1 w-1/3 text-lg hover:scale-105 active:scale-95 font-bold rounded-full bg-red-500 text-offwhite" >Delete</button>
-							<button onClick={()=> {setShowDeleteRiceModal(false); setSelectedRice(null)}}  className="p-1 w-1/3 text-lg hover:scale-105 active:scale-95 font-bold rounded-full bg-blue-500 text-offwhite" >Cancel</button>
+							<button onClick={()=> deleteRice()}  className="p-1 w-1/3 text-lg font-bold rounded-full bg-red-500 text-offwhite" >Delete</button>
+							<button onClick={()=> {setShowDeleteRiceModal(false); setSelectedRice(null)}}  className="p-1 w-1/3 text-lg font-bold rounded-full bg-blue-500 text-offwhite" >Cancel</button>
 						</div>
 					</section>
 				</main>
@@ -514,7 +520,7 @@ export default function App() {
 						<p className='text-2xl text-sageGreen font-bold col-span-2 place-self-center' >EDIT RICE</p>
 						<img src={newImagePreview} alt="Rice Image.png" className='border-2 border-sageGreen rounded-xl row-span-8 w-full h-full' />
 						<div className='w-full relative flex'>
-							<label htmlFor="riceImage"  className='w-1/3 text-center text-offwhite rounded-full p-2 px-3 cursor-pointer bg-brown hover:scale-105 active:scale-95' >Upload Image</label>
+							<label htmlFor="riceImage"  className='w-1/3 text-center text-offwhite rounded-full p-2 px-3 cursor-pointer bg-brown hover:scale-103 active:scale-100' >Upload Image</label>
 							<input type="file" id="riceImage" onChange={(e)=> newImageOnChange(e)} accept='image/*'  className='hidden' />
 						</div>
 						<div className="w-full flex items-center">
@@ -543,7 +549,7 @@ export default function App() {
 							<input type="text" value={newInputWeight} onChange={(e)=> setNewInputWeight(e.target.value)} name="weight" placeholder=' '  className="peer flex-1 border rounded-3xl p-2 px-3" />
 							<label htmlFor="weight" className='text-lg select-none peer-focus:text-xs peer-focus:-mt-15 peer-[&:not(:placeholder-shown)]:text-xs peer-[&:not(:placeholder-shown)]:-mt-15 absolute ml-4 transition-all' >Weight in KG</label>
 						</div>
-						<input type="submit" className=" p-2 px-3 w-full cursor-pointer rounded-full bg-brown hover:scale-103 active:scale-95 text-offwhite font-semibold text-lg" />
+						<input type="submit" className=" p-2 px-3 w-full rounded-full bg-brown text-offwhite font-semibold text-lg" />
 					</form>
 				</main>
 			)}
@@ -560,7 +566,7 @@ export default function App() {
 							}
 						</div>
 						<div className='w-full relative flex'>
-							<label htmlFor="userImage"  className='w-1/3 text-center text-offwhite rounded-full p-2 px-3 cursor-pointer bg-brown hover:scale-105 active:scale-95' >Upload Image</label>
+							<label htmlFor="userImage"  className='w-1/3 text-center text-offwhite rounded-full p-2 px-3 cursor-pointer bg-brown hover:scale-103 active:scale-100' >Upload Image</label>
 							<input type="file" id="userImage" onChange={(e)=> profileOnChange(e)} accept='image/*'  className='hidden' />
 						</div>
 						<div className="w-full flex items-center">
@@ -583,7 +589,7 @@ export default function App() {
 							<input type="checkbox" checked={inputIsAdmin} onChange={(e)=> setInputIsAdmin(e.target.checked)} id="isAdmin" className='scale-150 ml-1 mr-2 cursor-pointer active:scale-130' />
 							<label htmlFor="isAdmin" className='text-lg select-none' >Admin</label>
 						</div>
-						<input type="submit" className=" p-2 px-3 w-full cursor-pointer rounded-full bg-brown hover:scale-103 active:scale-95 text-offwhite font-semibold text-lg" />
+						<input type="submit" className=" p-2 px-3 w-full cursor-pointer rounded-full bg-brown text-offwhite font-semibold text-lg" />
 					</form>
 				</main>
 			)}
@@ -596,8 +602,8 @@ export default function App() {
 						<p className='text-6xl text-sageGreen font-semibold' >{selectedUser.userName}</p>
 						<p className='text-3xl text-sageGreen -mt-10' >{selectedUser.isAdmin === true ? 'Admin' : 'Customer'}</p>
 						<div className='w-full flex justify-around items-center'>
-							<button onClick={()=> deleteUser()}  className="p-1 w-1/3 text-lg hover:scale-105 active:scale-95 font-bold rounded-3xl bg-red-500 text-offwhite" >Delete</button>
-							<button onClick={()=> setShowDeleteUserModal(false)}  className="p-1 w-1/3 text-lg hover:scale-105 active:scale-95 font-bold rounded-3xl bg-blue-500 text-offwhite" >Cancel</button>
+							<button onClick={()=> deleteUser()}  className="p-1 w-1/3 text-lg font-bold rounded-3xl bg-red-500 text-offwhite" >Delete</button>
+							<button onClick={()=> setShowDeleteUserModal(false)}  className="p-1 w-1/3 text-lg font-bold rounded-3xl bg-blue-500 text-offwhite" >Cancel</button>
 						</div>
 					</section>
 				</main>
@@ -618,7 +624,7 @@ export default function App() {
 							}
 						</div>
 						<div className='w-full relative flex'>
-							<label htmlFor="userImage"  className='w-1/3 text-center text-offwhite rounded-full p-2 px-3 cursor-pointer bg-brown hover:scale-105 active:scale-95' >Upload Image</label>
+							<label htmlFor="userImage"  className='w-1/3 text-center text-offwhite rounded-full p-2 px-3 cursor-pointer bg-brown hover:scale-103 active:scale-100' >Upload Image</label>
 							<input type="file" id="userImage" onChange={(e)=> newProfileOnChange(e)} accept='image/*'  className='hidden' />
 						</div>
 						<div className="w-full flex items-center">
@@ -641,18 +647,20 @@ export default function App() {
 							<input type="checkbox" checked={newInputIsAdmin} onChange={(e)=> setNewInputIsAdmin(e.target.checked)} id="isAdmin" className='scale-150 ml-1 mr-2 cursor-pointer active:scale-130' />
 							<label htmlFor="isAdmin" className='text-lg select-none' >Admin</label>
 						</div>
-						<input type="submit" className=" p-2 px-3 w-full cursor-pointer rounded-full bg-brown hover:scale-103 active:scale-95 text-offwhite font-semibold text-lg" />
+						<input type="submit" className=" p-2 px-3 w-full cursor-pointer rounded-full bg-brown text-offwhite font-semibold text-lg" />
 					</form>
 				</main>
 			)}
 
 			{/* Logout confirmation */}
 			{showLogoutModal && (
-				<main onClick={()=> setShowLogoutModal(false)}  className='absolute top-0 left-0 w-full h-full bg-gray-950/70 flex justify-center items-center text-white' >
-					<section onClick={(e)=> e.stopPropagation()}  className="w-1/2 h-1/2 p-6 gap-4 justify-center bg-coal backdrop-blur-xs flex rounded-2xl items-end shadow-2xl" >
-						<p className='text-5xl absolute top-10' >Confirm log out</p>
-						<button className="mt-7 p-1 w-1/3 text-lg hover:outline hover:outline-red-800 font-bold rounded-3xl bg-coal text-offwhite" >Logout</button>
-						<button onClick={()=> setShowLogoutModal(false)}  className="mt-7 p-1 w-1/3 text-lg hover:outline hover:outline-red-800 font-bold rounded-3xl bg-coal text-offwhite" >Cancel</button>
+				<main onClick={()=> setShowLogoutModal(false)}  className='absolute top-0 left-0 w-full h-full bg-gray-950/70 flex justify-center items-center' >
+					<section onClick={(e)=> e.stopPropagation()}  className="w-1/2 p-6 gap-4 justify-center bg-khaki flex flex-col items-center rounded-2xl" >
+						<p className='text-2xl text-sageGreen' >LOG OUT</p>
+						<div className="w-full flex justify-around items-center" >
+							<button onClick={()=> logout()}  className="p-1 w-1/4 text-lg font-semibold bg-red-500 text-offwhite rounded-full" >Logout</button>
+							<button onClick={()=> setShowLogoutModal(false)}  className=" p-1 w-1/4 text-lg bg-sageGreen text-offwhite font-semibold rounded-full" >Cancel</button>
+						</div>
 					</section>
 				</main>
 			)}

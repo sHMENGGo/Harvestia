@@ -1,15 +1,13 @@
 import { Navigate } from 'react-router-dom'
 import { useState, useEffect } from 'react'
-import axios from 'axios'
 import { apiPost } from '../components/api'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faEye, faEyeSlash } from '@fortawesome/free-solid-svg-icons'
 
-export default function login({loggedIn}) {
+export default function login({setValidLogin, validLogin}) {
 	// Verify login username and password
 	const [userName, setUserName] = useState('')
 	const [userPassword, setUserPassword] = useState('')
-	const [validLogin, setValidLogin] = useState(false)
 	const [loginError, setLoginError] = useState('')
 	function verifyLogin() {
 		apiPost('/login', {userName, userPassword}).then((data)=> {
@@ -38,11 +36,11 @@ export default function login({loggedIn}) {
 				<label htmlFor="rememberMe" className='text-xs lg:text-[1rem]' >Remember me</label>
 				<p   className="right-0 font-normal absolute text-white cursor-pointer hover:text-blue-500 text-xs lg:text-[1rem]">Forgot Password?</p>
 			</div><br />
-			<input type="submit" value={'Login'}  className=" p-2 w-full text-lg hover:bg-neutral-200/80 active:scale-95 font-bold cursor-pointer rounded-3xl bg-khaki text-neutral-800" />
+			<input type="submit" value={'Login'}  className=" p-2 w-full text-lg font-bold rounded-3xl bg-khaki text-neutral-800" />
 			<p className='mt-2 text-xs lg:text-[1rem]'>Don't have an account? <span className=' text-white hover:text-blue-500 cursor-pointer'>Register</span></p>
 
-			{/* Show dashboard if valid login */}
-			{validLogin && (<Navigate to={'/Home'} replace />)}
+			{/* Show home if valid login */}
+			{validLogin && (<Navigate to={'/home'} replace />)}
 		</form>
    )
 }

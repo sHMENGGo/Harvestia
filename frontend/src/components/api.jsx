@@ -14,7 +14,7 @@ export async function apiGet(url) {
    try {
       const res = await axios.get(`http://localhost:5000/api${url}`, {withCredentials:true})
       return res.data
-   } catch(err) {console.error("Error fetching data", err)}
+   } catch(err) {if(url === '/verifyToken') return; console.error("Error fetching data", err)}
 }
 
 export async function apiDelete(url, data) {

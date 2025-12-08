@@ -30,7 +30,8 @@ export default function admin({
 
 			{/* Inventory Section */}
 			<section className="backdrop-blur-2xl bg-khaki border-l-5 border-brown p-2 shadow-2xl rounded-lg w-full h-full flex col-span-4 flex-col" >
-				<p className="text-2xl opacity-70 w-full text-center mb-3">INVENTORY</p><p onClick={()=> setShowAddRiceModal(true)}  className="absolute bg-brown right-5 top-3 text-offwhite p-1 px-10 rounded-lg hover:scale-105 active:scale-95 font-semibold text-center cursor-pointer" >Add Rice</p>
+				<p className="text-2xl opacity-70 w-full text-center mb-3">INVENTORY</p>
+				<button onClick={()=> setShowAddRiceModal(true)}  className="absolute bg-brown right-5 top-3 text-offwhite p-1 px-10 rounded-lg font-semibold text-center" >Add Rice</button>
 				<input type="text" placeholder="Search rice"  className="absolute p-1 rounded top-2 left-2 border border-neutral-900/50 hover:border-neutral-900 focus:outline-1 w-[30%]" />
 				<table>
 					<thead className="border-b-2 border-neutral-900/50 border-t-2 text-xl text-sageGreen">
@@ -57,8 +58,8 @@ export default function admin({
 								<td>{rice.rating}</td>
 								<td>{rice.stock > 0 ? 'Available' : 'No Stock'}</td>
 								<td className="flex-row flex justify-center">
-									<p className=" text-xl p-1 rounded-lg hover:text-blue-500 hover:scale-110 font-semibold cursor-pointer" ><FontAwesomeIcon icon={faEdit} onClick={()=> {setShowEditRiceModal(true); setSelectedRice(rice)}} /></p>
-									<p className=" text-xl p-1 rounded-lg hover:text-red-500 hover:scale-110 font-semibold cursor-pointer" ><FontAwesomeIcon icon={faTrash} onClick={()=> {setShowDeleteRiceModal(true); setSelectedRice(rice)}} /></p>
+									<button  className=" text-xl p-1 rounded-lg hover:text-blue-500 font-semibold" ><FontAwesomeIcon icon={faEdit} onClick={()=> {setShowEditRiceModal(true); setSelectedRice(rice)}} /></button>
+									<button  className=" text-xl p-1 rounded-lg hover:text-red-500 font-semibold" ><FontAwesomeIcon icon={faTrash} onClick={()=> {setShowDeleteRiceModal(true); setSelectedRice(rice)}} /></button>
 								</td>
 							</tr>
 						))}
@@ -69,7 +70,7 @@ export default function admin({
 			{/* Category Section */}
 			<section className=" bg-khaki border-l-5 border-brown p-2 shadow-2xl rounded-lg w-full h-full flex col-span-4 flex-col relative" >
 				<p className="text-2xl opacity-70 border-b-2 pb-2 w-full text-center mb-3">CATEGORY</p>
-				<p onClick={()=> setShowAddCategoryModal(true)}  className=" bg-brown absolute right-5 top-3 text-offwhite p-1 px-8 rounded-lg hover:scale-105 active:scale-95 font-semibold text-center cursor-pointer" >Add Category</p>
+				<button onClick={()=> setShowAddCategoryModal(true)}  className=" bg-brown absolute right-5 top-3 text-offwhite p-1 px-8 rounded-lg font-semibold text-center" >Add Category</button>
 				<input type="text" placeholder="Search category"  className=" p-1 absolute rounded top-2 left-2 border border-neutral-900/50 hover:border-neutral-900 focus:outline-1 w-[30%]" />
 				<div className="flex flex-row gap-4">
 					{/* Show Categories */}
@@ -80,8 +81,8 @@ export default function admin({
 								<tr key={category.id} className="border-b border-neutral-400/20 hover:bg-neutral-400/20" >
 									<td>{category.name}</td>
 									<td className="flex-row flex justify-center">
-										<p className=" text-xl p-1 rounded-lg hover:text-blue-500 hover:scale-110 font-semibold cursor-pointer" ><FontAwesomeIcon icon={faEdit} onClick={()=> {setShowEditCategoryModal(true); setSelectedCategory(category)}} /></p>
-										<p className=" text-xl p-1 rounded-lg hover:text-red-500 hover:scale-110 font-semibold cursor-pointer" ><FontAwesomeIcon icon={faTrash} onClick={()=> {setShowDeleteCategoryModal(true); setSelectedCategory(category)}} /></p>
+										<button  className=" text-xl p-1 rounded-lg hover:text-blue-500 font-semibold" ><FontAwesomeIcon icon={faEdit} onClick={()=> {setShowEditCategoryModal(true); setSelectedCategory(category)}} /></button>
+										<button  className=" text-xl p-1 rounded-lg hover:text-red-500 font-semibold" ><FontAwesomeIcon icon={faTrash} onClick={()=> {setShowDeleteCategoryModal(true); setSelectedCategory(category)}} /></button>
 									</td>
 								</tr>
 							))}
@@ -92,7 +93,8 @@ export default function admin({
 
 			{/* User Section */}
 			<section className="backdrop-blur-2xl bg-khaki border-l-5 border-brown p-2 shadow-2xl rounded-lg w-full h-full flex col-span-4 flex-col" >
-				<p className="text-2xl opacity-70 w-full text-center mb-3">USER</p><p onClick={()=> setShowAddUserModal(true)}  className="absolute bg-brown right-5 top-3 text-offwhite p-1 px-10 rounded-lg hover:scale-105 active:scale-95 font-semibold text-center cursor-pointer" >Add User</p>
+				<p className="text-2xl opacity-70 w-full text-center mb-3">USER</p>
+				<button onClick={()=> setShowAddUserModal(true)}  className="absolute bg-brown right-5 top-3 text-offwhite p-1 px-10 rounded-lg font-semibold text-center" >Add User</button>
 				<input type="text" placeholder="Search user"  className="absolute p-1 rounded top-2 left-2 border border-neutral-900/50 hover:border-neutral-900 focus:outline-1 w-[30%]" />
 				<table>
 					<thead className="border-b-2 border-neutral-900/50 border-t-2 text-xl text-sageGreen">
@@ -120,8 +122,8 @@ export default function admin({
 								<td>{String(user.isAdmin)}</td>
 								<td>{user.address}</td>
 								<td className="flex-row flex justify-center">
-									<p className=" text-xl p-1 rounded-lg hover:text-blue-500 hover:scale-110 font-semibold cursor-pointer" ><FontAwesomeIcon icon={faEdit} onClick={()=> {setShowEditUserModal(true); setSelectedUser(user)}}/></p>
-									<p className=" text-xl p-1 rounded-lg hover:text-red-500 hover:scale-110 font-semibold cursor-pointer" ><FontAwesomeIcon icon={faTrash} onClick={()=> {setShowDeleteUserModal(true); setSelectedUser(user)}} /></p>
+									<button  className=" text-xl p-1 rounded-lg hover:text-blue-500 font-semibold" ><FontAwesomeIcon icon={faEdit} onClick={()=> {setShowEditUserModal(true); setSelectedUser(user)}}/></button>
+									<button  className=" text-xl p-1 rounded-lg hover:text-red-500 font-semibold" ><FontAwesomeIcon icon={faTrash} onClick={()=> {setShowDeleteUserModal(true); setSelectedUser(user)}} /></button>
 								</td>
 							</tr>
 						))}

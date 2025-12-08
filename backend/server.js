@@ -8,6 +8,7 @@ import { v2 as cloudinary } from 'cloudinary'
 import { CloudinaryStorage } from 'multer-storage-cloudinary'
 import { prisma } from './lib/prisma'
 import { error } from 'console'
+import { json } from 'stream/consumers'
 dotenv.config()
 
 // Create App server
@@ -75,7 +76,7 @@ app.post('/api/login', async (req, res) => {
 // Function to verify token
 function verifyToken(req, res, next) {
   	const token = req.cookies.accessToken
-  	if(!token) {return res.status(401).json({error: "Not logged in"})}
+  	if(!token) return res.json({error: "No token found"})
   	try {
     	const decoded = jwt.verify(token, process.env.JWT_SECRET_KEY)
     	req.user = decoded
@@ -87,7 +88,7 @@ function verifyToken(req, res, next) {
 app.get('/api/verifyToken', verifyToken, async (req, res)=> {
   	const currentToken = req.user
   	const currentUser = await prisma.User.findUnique({where: {id: currentToken.userID}})
-  	res.json({message: "User is logged in", user: currentUser || null})
+  	res.status(200).json({message: "User is logged in", user: currentUser || null})
 })
 
 // Function to verify admin
@@ -293,5 +294,28 @@ app.put('/api/editUser', verifyToken, verifyAdmin, uploadProfileImage.single('ne
 	} catch(err) {
 	 	console.error('Prisma error: ', err)
 	 	res.status(500).json({ message: 'Editing User in database failed', err})
+  	}
+})
+
+// Edit self profile in database
+app.put('/api/editProfile', verifyToken, uploadProfileImage.single('newPictureFile'), async (req, res)=> {
+  	const {newUserName, newPassword, newEmail, newAddress, userID, oldPictureID} = req.body
+	try {
+		const updateData = {
+			userName: newUserName || null,
+			password: newPassword || null,
+			email: newEmail || null,
+			address: newAddress || null
+		}
+		if (req.file && req.file.path) {
+			await cloudinary.uploader.destroy(oldPictureID)
+			updateData.imagePath = req.file.path
+			updateData.imagePublicID = req.file.filename
+		}
+		await prisma.User.update({where: {id: parseInt(userID)}, data: updateData})
+		res.status(200).json({message: 'Profile edited successfully!'})
+	} catch(err) {
+	 	console.error('Prisma error: ', err)
+	 	res.status(500).json({ message: 'Editing Profile in database failed', err})
   	}
 })

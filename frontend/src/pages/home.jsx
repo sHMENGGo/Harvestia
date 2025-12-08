@@ -25,7 +25,7 @@ export default function home({showCategory, rices}) {
 							<p className="text-sageGreen font-semibold">₱ {filteredRice.price}</p>
 							<p className="opacity-80" >2421 sold</p>
 							<p className="opacity-80" ><FontAwesomeIcon icon={faStar} className="text-yellow-500 opacity-100"/> 3.5</p>
-							<button className="bottom-1 absolute right-1 bg-sageGreen p-1 px-2 text-offwhite rounded active:scale-95">Buy Now</button>
+							<button className="bottom-1 absolute right-1 bg-sageGreen p-1 px-2 text-offwhite rounded">Buy Now</button>
 						</div>
 					</div>
 				))}
