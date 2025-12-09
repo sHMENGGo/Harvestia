@@ -1,4 +1,4 @@
-import { Routes, Route, Navigate, useLocation, useNavigate, replace } from 'react-router-dom'
+import { Routes, Route, Navigate, useLocation, useNavigate } from 'react-router-dom'
 import { useState, useEffect } from 'react'
 import Login from './pages/login'
 import SideBar from './components/sideBar'
@@ -6,6 +6,8 @@ import Dashboard from './pages/dashboard'
 import Home from './pages/home'
 import Admin from './pages/admin'
 import Profile from './pages/profile'
+import Checkout from './pages/checkout'
+import RiceInfo from './pages/riceInfo'
 import { apiPost, apiGet, apiDelete, apiPut } from './components/api'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faCircleXmark } from '@fortawesome/free-solid-svg-icons'
@@ -64,7 +66,7 @@ export default function App() {
 
 	// Redirect to login page if there's no token
 	useEffect(()=> {
-		if(validLogin === true) {navigate('/profile', {replace:true})}
+		if(validLogin === true) {navigate('/home', {replace:true})}
 		else {navigate('/login', {replace:true})}
 	}, [validLogin])
 
@@ -360,6 +362,7 @@ export default function App() {
 	// Prevent app to render if there's no user, wait for token checking
 	if(isLoading) return <div className="w-full top-0 flex justify-center items-center absolute h-full family-roboto"><p className='text-9xl opacity-50'>Loading...</p></div>
 
+	// Logout function
 	function logout() {
 		apiGet('/logout')
 		setValidLogin(false)
@@ -376,10 +379,14 @@ export default function App() {
 					<Route path='/register' element={<Navigate to='/login'/>}/>
 					<Route path='/recoverAccount' element={<Navigate to='/login'/>}/>
 					<Route path='/dashboard' element={<Dashboard />}/>
+					<Route path='/checkout' element={<Checkout />}/>
+					<Route path='/riceInfo' element={<RiceInfo selectedRice={selectedRice} />}/>
 					<Route path='/profile' element={<Profile user={user} setShowLogoutModal={setShowLogoutModal} options={options} setRefresh={setRefresh} />}/>
 					<Route path='/home' element={<Home 
 						showCategory={showCategory} 
+						categories={categories}
 						rices={rices}
+						setSelectedRice={setSelectedRice}
 						setRefresh={setRefresh}
 					/>} />
 					<Route path='/admin' element={<Admin 
