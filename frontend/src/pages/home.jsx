@@ -25,7 +25,7 @@ export default function home({showCategory, rices, categories, setSelectedRice})
 	
 	return (
 		<main className="gap-4 w-full p-4 h-full relative flex flex-col box-border">
-			<h1 className="text-6xl font-bold text-offwhite" >{categoryName}</h1>
+			<h1 className="text-7xl font-bold text-khaki" >{categoryName}</h1>
 			<br />
 			<section className="w-full flex gap-6 h-full flex-wrap p-2" >
 				{/* Rice cards */}

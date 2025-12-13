@@ -18,6 +18,7 @@ body {
   min-height: 100vh;
 }
 
+
 a:hover {cursor: pointer;}
 
 button {cursor: pointer;}
@@ -27,6 +28,8 @@ button:active {scale: 100%;}
 input[type="submit"] {cursor: pointer;}
 input[type="submit"]:hover {scale: 103%;}
 input[type="submit"]:active {scale: 100%;}
+
+input[type="checkbox"] {cursor: pointer;}
 
 input:focus {outline: none;}
 textarea:focus {outline: none;}
@@ -40,7 +43,6 @@ textarea:focus {outline: none;}
 .text-brown {color: #af4c0f;}
 
 .family-roboto {font-family: 'Roboto', sans-serif;}
-.family-roboto-semibold {font-family: 'Roboto', sans-serif;}
 
 .text-khaki {color: #ffffcc;}
 .bg-khaki {background: #ffffcc;}

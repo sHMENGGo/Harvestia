@@ -2,7 +2,6 @@ import { Routes, Route, Navigate, useLocation, useNavigate } from 'react-router-
 import { useState, useEffect } from 'react'
 import Login from './pages/login'
 import SideBar from './components/sideBar'
-import Dashboard from './pages/dashboard'
 import Home from './pages/home'
 import Admin from './pages/admin'
 import Profile from './pages/profile'
@@ -62,11 +61,14 @@ export default function App() {
 			} finally {setIsLoading(false)}
 		}
 		checkToken()
-	}, [refresh, validLogin])
+	}, [validLogin])
 
 	// Redirect to login page if there's no token
+	const [prevLocation, setPrevLocation] = useState(useLocation())
 	useEffect(()=> {
-		if(validLogin === true) {navigate('/home', {replace:true})}
+		if(validLogin === true) {
+			if(prevLocation.pathname === '/login') {navigate('/home', {replace:true})}
+			else {navigate(prevLocation, {replace:true}); setPrevLocation(prev => prev)}}
 		else {navigate('/login', {replace:true})}
 	}, [validLogin])
 
@@ -317,7 +319,7 @@ export default function App() {
 		setNewInputUserName(selectedUser.userName || '')
 		setNewInputPassword(selectedUser.password || '')
 		setNewInputEmail(selectedUser.email || '')
-		setNewInputAddress(selectedUser.adress || '')
+		setNewInputAddress(selectedUser.address || '')
 		setNewInputIsAdmin(selectedUser.isAdmin || false)
 		setNewProfilePreview(selectedUser.imagePath || null)
 	}, [selectedUser])
@@ -368,17 +370,18 @@ export default function App() {
 		setValidLogin(false)
 		setShowLogoutModal(false)
 		navigate('/login', {replace:true})
+		setPrevLocation(useLocation())
 	}
 
+
    return(
-		<main className="flex w-full family-roboto absolute justify-center items-center top-0 text-neutral-900 bg-[url('./assets/riceBG.jpg')] bg-center bg-cover">
+		<main className="flex w-full family-roboto absolute justify-center items-center top-0 text-neutral-800 bg-[url('./assets/riceBG.jpg')] bg-center bg-cover">
 			<section className="w-[80%] left-[10%] h-screen overflow-auto relative text-neutral-900">
 				<Routes>
 					<Route path='/' element={<Navigate to={validLogin ? '/home' : '/login'} replace />} />
 					<Route path='/login' element={<Login setValidLogin={setValidLogin} validLogin={validLogin} />}/>
 					<Route path='/register' element={<Navigate to='/login'/>}/>
 					<Route path='/recoverAccount' element={<Navigate to='/login'/>}/>
-					<Route path='/dashboard' element={<Dashboard />}/>
 					<Route path='/checkout' element={<Checkout />}/>
 					<Route path='/riceInfo' element={<RiceInfo selectedRice={selectedRice} />}/>
 					<Route path='/profile' element={<Profile user={user} setShowLogoutModal={setShowLogoutModal} options={options} setRefresh={setRefresh} />}/>
@@ -407,7 +410,7 @@ export default function App() {
 						totalUsers={totalUsers}
 						rices={rices}
 						totalRices={totalRices}
-					/>} />
+					/>}/>
 				</Routes>
 			</section>
 
@@ -426,7 +429,7 @@ export default function App() {
 						<p className='text-2xl text-sageGreen font-bold' >ADD NEW CATEGORY</p>
 						<div className="w-full flex items-center">
 							<input type="text" value={inputCategory} onChange={(e)=> setInputCategory(e.target.value)} required name="inputCategory" className="peer flex-1 border rounded-3xl p-2 px-3" />
-							<label htmlFor="inputCategory"  className='text-lg select-none peer-focus:text-xs peer-valid:text-xs peer-focus:-mt-15 peer-valid:-mt-15 absolute ml-4 transition-all' >Category Name</label>
+							<label htmlFor="inputCategory"  className='text-lg select-none peer-focus:text-xs peer-valid:text-xs peer-focus:-mt-15 peer-valid:-mt-15 absolute ml-4 transition-all pointer-events-none' >Category Name</label>
 						</div>
 						<input type="submit" className=" p-2 px-3 w-full cursor-pointer rounded-full bg-brown text-offwhite font-semibold" />
 					</form>
@@ -476,11 +479,11 @@ export default function App() {
 						</div>
 						<div className="w-full flex items-center">
 							<input type="text" value={inputRice} onChange={(e)=> setInputRice(e.target.value)} required name="riceName" className="peer flex-1 border rounded-3xl p-2 px-3" />
-							<label htmlFor="riceName"  className='text-lg select-none peer-focus:text-xs peer-valid:text-xs peer-focus:-mt-15 peer-valid:-mt-15 absolute ml-4 transition-all'>Rice Name</label>
+							<label htmlFor="riceName"  className='text-lg select-none peer-focus:text-xs peer-valid:text-xs peer-focus:-mt-15 peer-valid:-mt-15 absolute ml-4 transition-all pointer-events-none'>Rice Name</label>
 						</div>
 						<div className="w-full flex items-center">
 							<input type="text" value={inputCompany} onChange={(e)=> setInputCompany(e.target.value)} name="riceCompany" placeholder=' '  className="peer flex-1 border rounded-3xl p-2 px-3" />
-							<label htmlFor="riceCompany" className='text-lg select-none peer-focus:text-xs peer-focus:-mt-15 peer-[&:not(:placeholder-shown)]:text-xs peer-[&:not(:placeholder-shown)]:-mt-15 absolute ml-4 transition-all' >Company</label>
+							<label htmlFor="riceCompany" className='text-lg select-none peer-focus:text-xs peer-focus:-mt-15 peer-[&:not(:placeholder-shown)]:text-xs peer-[&:not(:placeholder-shown)]:-mt-15 absolute ml-4 transition-all pointer-events-none' >Company</label>
 						</div>
 						<select onChange={(e) => setInputCategoryName(e.target.value)} name="category" className='border w-full p-2 px-3 rounded-full text-lg' >
 							<option selected disabled required  className='bg-khaki text-lg' >Select Category</option>
@@ -490,15 +493,21 @@ export default function App() {
 						</select>
 						<div className="w-full flex items-center">
 							<input type="text" value={inputPrice} onChange={(e)=> setInputPrice(e.target.value)} required name="price" className="peer flex-1 border rounded-3xl p-2 px-3" />
-							<label htmlFor="price"  className='text-lg select-none peer-focus:text-xs peer-valid:text-xs peer-focus:-mt-15 peer-valid:-mt-15 absolute ml-4 transition-all' >Price</label>
+							<label htmlFor="price"  className='text-lg select-none peer-focus:text-xs peer-valid:text-xs peer-focus:-mt-15 peer-valid:-mt-15 absolute ml-4 transition-all pointer-events-none' >Price</label>
 						</div>
 						<div className="w-full flex items-center">
 							<input type="text" value={inputStock} onChange={(e)=> setInputStock(e.target.value)} required name="stock" className="peer flex-1 border rounded-3xl p-2 px-3" />
-							<label htmlFor="stock"  className='text-lg select-none peer-focus:text-xs peer-valid:text-xs peer-focus:-mt-15 peer-valid:-mt-15 absolute ml-4 transition-all' >Stock</label>
+							<label htmlFor="stock"  className='text-lg select-none peer-focus:text-xs peer-valid:text-xs peer-focus:-mt-15 peer-valid:-mt-15 absolute ml-4 transition-all pointer-events-none' >Stock</label>
 						</div>
-						<div className="w-full flex items-center">
-							<input type="text" value={inputWeight} onChange={(e)=> setInputWeight(e.target.value)} name="weight" placeholder=' '  className="peer flex-1 border rounded-3xl p-2 px-3" />
-							<label htmlFor="weight" className='text-lg select-none peer-focus:text-xs peer-focus:-mt-15 peer-[&:not(:placeholder-shown)]:text-xs peer-[&:not(:placeholder-shown)]:-mt-15 absolute ml-4 transition-all' >Weight in KG</label>
+						<div className='w-full flex items-center' >
+							<input type="checkbox" id='25kg' className='scale-120' />
+							<label htmlFor="25kg" className='text-lg ml-1' >25KG</label>
+							<input type="checkbox" id='50kg' className='scale-120 ml-4' />
+							<label htmlFor="50kg" className='ml-1 mr-4 text-lg' >50KG</label>
+							<div className="w-full flex items-center">
+								<input type="text" value={inputWeight} onChange={(e)=> setInputWeight(e.target.value)} name="weight" placeholder=' '  className="peer flex-1 border rounded-3xl p-2 px-3" />
+								<label htmlFor="weight" className='text-lg select-none peer-focus:text-xs peer-focus:-mt-15 peer-[&:not(:placeholder-shown)]:text-xs peer-[&:not(:placeholder-shown)]:-mt-15 absolute ml-4 transition-all pointer-events-none' >Custom weight in KG</label>
+							</div>
 						</div>
 						<input type="submit" className=" p-2 px-3 w-full rounded-full bg-brown text-offwhite font-semibold text-lg" />
 					</form>
@@ -636,19 +645,19 @@ export default function App() {
 						</div>
 						<div className="w-full flex items-center">
 							<input type="text" value={newInputUserName} onChange={(e)=> setNewInputUserName(e.target.value)} required name="userName" className="peer flex-1 border rounded-3xl p-2 px-3" />
-							<label htmlFor="userName"  className='text-lg select-none peer-focus:text-xs peer-valid:text-xs peer-focus:-mt-15 peer-valid:-mt-15 absolute ml-4 transition-all' >Username</label>
+							<label htmlFor="userName"  className='text-lg select-none peer-focus:text-xs peer-valid:text-xs peer-focus:-mt-15 peer-valid:-mt-15 absolute ml-4 transition-all pointer-events-none' >Username</label>
 						</div>
 						<div className="w-full flex items-center">
 							<input type="password" value={newInputPassword} onChange={(e)=> setNewInputPassword(e.target.value)} required name="userPassword"  className="peer flex-1 border rounded-3xl p-2 px-3" />
-							<label htmlFor="userPassword" className='text-lg select-none peer-focus:text-xs peer-focus:-mt-15 peer-valid:text-xs peer-valid:-mt-15 absolute ml-4 transition-all' >Password</label>
+							<label htmlFor="userPassword" className='text-lg select-none peer-focus:text-xs peer-focus:-mt-15 peer-valid:text-xs peer-valid:-mt-15 absolute ml-4 transition-all pointer-events-none' >Password</label>
 						</div>
 						<div className="w-full flex items-center">
 							<input type="text" value={newInputEmail} onChange={(e)=> setNewInputEmail(e.target.value)} placeholder='' name="email" className="peer flex-1 border rounded-3xl p-2 px-3" />
-							<label htmlFor="email"  className='text-lg select-none peer-focus:text-xs peer-focus:-mt-15 peer-[:not(:placeholder-shown)]:text-xs peer-[:not(:placeholder-shown)]:-mt-15 absolute ml-4 transition-all' >Email</label>
+							<label htmlFor="email"  className='text-lg select-none peer-focus:text-xs peer-focus:-mt-15 peer-[:not(:placeholder-shown)]:text-xs peer-[:not(:placeholder-shown)]:-mt-15 absolute ml-4 transition-all pointer-events-none' >Email</label>
 						</div>
 						<div className="w-full flex items-center">
 							<input type="text" value={newInputAddress} onChange={(e)=> setNewInputAddress(e.target.value)} placeholder='' name="address" className="peer flex-1 border rounded-3xl p-2 px-3" />
-							<label htmlFor="address"  className='text-lg select-none peer-focus:text-xs peer-focus:-mt-15 peer-[:not(:placeholder-shown):valid]:text-xs peer-[:not(:placeholder-shown):valid]:-mt-15 absolute ml-4 transition-all' >Address</label>
+							<label htmlFor="address"  className='text-lg select-none peer-focus:text-xs peer-focus:-mt-15 peer-[:not(:placeholder-shown):valid]:text-xs peer-[:not(:placeholder-shown):valid]:-mt-15 absolute ml-4 transition-all pointer-events-none' >Address</label>
 						</div>
 						<div className='w-full flex items-center'>
 							<input type="checkbox" checked={newInputIsAdmin} onChange={(e)=> setNewInputIsAdmin(e.target.checked)} id="isAdmin" className='scale-150 ml-1 mr-2 cursor-pointer active:scale-130' />

@@ -1,6 +1,5 @@
 generator client {
-  provider = "prisma-client"
-  output   = "../generated/prisma"
+  provider = "prisma-client-js"
 }
 
 datasource db {
@@ -25,6 +24,8 @@ model Rice {
   imagePath      String?
   imagePublicID  String?
   weightKG       Float?
+  kg25           Boolean    @default(false)
+  kg50           Boolean    @default(false)
   category       Category?  @relation(fields: [categoryID], references: [id])
 }
 

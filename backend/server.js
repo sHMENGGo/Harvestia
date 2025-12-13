@@ -7,8 +7,6 @@ import multer from 'multer'
 import { v2 as cloudinary } from 'cloudinary'
 import { CloudinaryStorage } from 'multer-storage-cloudinary'
 import { prisma } from './lib/prisma'
-import { error } from 'console'
-import { json } from 'stream/consumers'
 dotenv.config()
 
 // Create App server

@@ -6,7 +6,6 @@ import { apiPut } from "../components/api"
 
 export default function profile({user, setShowLogoutModal, options, setRefresh}) {
    const [editMode, setEditMode] = useState(false)
-   console.log('user:',user)
 
    const [showPurchase, setShowPurchase] = useState('history')
 
@@ -49,13 +48,6 @@ export default function profile({user, setShowLogoutModal, options, setRefresh})
       apiPut('/editProfile', formData).then((data)=> {
          alert(data.message)
          setRefresh(prev => !prev)
-         setNewUserName('')
-         setNewPassword('')
-         setNewEmail('')
-         setNewAddress('')
-         setNewPictureFile(null)
-         URL.revokeObjectURL(newPicturePreview)
-         setNewPicturePreview(null)
          setEditMode(false)
       })
    }
@@ -74,27 +66,17 @@ export default function profile({user, setShowLogoutModal, options, setRefresh})
                   <button onClick={()=> setShowPurchase('rate')}  className={`${showPurchase === 'rate' ? 'border-b-2 font-semibold' : ''} text-brown`} >To Rate</button>
                </div>
                <div className=" w-full h-full flex justify-center items-center" >
-                  {showPurchase === 'history' && (
-                     <p className="text-3xl opacity-50" >No purchase history</p>
-                  )}
-                  {showPurchase === 'pay' && (
-                     <p className="text-3xl opacity-50" >No orders to pay</p>
-                  )}
-                  {showPurchase === 'ship' && (
-                     <p className="text-3xl opacity-50" >No orders to ship</p>
-                  )}
-                  {showPurchase === 'receive' && (
-                     <p className="text-3xl opacity-50" >No orders to receive</p>
-                  )}
-                  {showPurchase === 'rate' && (
-                     <p className="text-3xl opacity-50" >No orders to rate</p>
-                  )}
+                  {showPurchase === 'history' && (<p className="text-3xl opacity-50" >No purchase history</p>)}
+                  {showPurchase === 'pay' && (<p className="text-3xl opacity-50" >No orders to pay</p>)}
+                  {showPurchase === 'ship' && (<p className="text-3xl opacity-50" >No orders to ship</p>)}
+                  {showPurchase === 'receive' && (<p className="text-3xl opacity-50" >No orders to receive</p>)}
+                  {showPurchase === 'rate' && (<p className="text-3xl opacity-50" >No orders to rate</p>)}
                </div>
             </div>
             {/* User credentials */}
+            <button onClick={()=> setShowLogoutModal(true)}  className="p-1 px-4 rounded-full bg-brown text-offwhite right-4 absolute" >Logout</button>
             <form onSubmit={(e)=> {editProfile(); e.preventDefault()}}  className="w-1/2 flex flex-col items-center gap-2 border-l border-sageGreen-50 pl-4" >
                <h1 className="text-2xl text-sageGreen font-semibold place-self-start" >Personal Information</h1>
-               <button onClick={()=> setShowLogoutModal(true)}  className="p-1 px-4 rounded-full bg-brown text-offwhite place-self-end absolute" >Logout</button>
                <div className="border-sageGreen relative border-2 bg-khaki w-1/2 rounded-full aspect-square flex justify-center items-center" >
                   {user.imagePath ? <img src={newPicturePreview}  className='w-full h-full rounded-full absolute' /> : <FontAwesomeIcon icon={faUser} className='absolute text-sageGreen text-9xl' />}
                </div>

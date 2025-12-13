@@ -23,12 +23,12 @@ export default function login({setValidLogin, validLogin}) {
 			<p className="text-3xl font-bold">Login</p><br /><br />
 			<div className="w-full flex items-center">
 				<input type="text" value={userName} onChange={(e)=> setUserName(e.target.value)} required name="userName" className="peer flex-1 border border-khaki rounded-3xl p-2 pl-4 valid:bg-transparent" />
-				<label htmlFor="userName"  className={`text-lg select-none peer-focus:text-xs peer-valid:text-xs peer-focus:-mt-15 peer-valid:-mt-15 absolute ml-4 transition-all `}>Username</label>
+				<label htmlFor="userName"  className={`text-lg select-none peer-focus:text-xs peer-valid:text-xs peer-focus:-mt-15 peer-valid:-mt-15 absolute ml-4 transition-all pointer-events-none`}>Username</label>
 			</div><br />
 			<div className="w-full flex items-center relative">
 				{showPswrd === true ? <FontAwesomeIcon icon={faEyeSlash} onClick={()=> setShowPswrd(false)}  className='right-3 opacity-60 cursor-pointer absolute'  /> : <FontAwesomeIcon icon={faEye} onClick={()=> setShowPswrd(true)}  className='right-3 opacity-60 cursor-pointer absolute' />}
 				<input type={showPswrd === true ? "text" : "password"} value={userPassword} onChange={(e)=> setUserPassword(e.target.value)} required name="userPassword" className="peer flex-1 border border-khaki rounded-3xl p-2 pl-4"  />
-				<label htmlFor="userPassword" className=" text-lg select-none peer-focus:text-xs peer-valid:text-xs peer-focus:-mt-15 peer-valid:-mt-15 absolute ml-4 transition-all">Password</label>
+				<label htmlFor="userPassword" className=" text-lg select-none peer-focus:text-xs peer-valid:text-xs peer-focus:-mt-15 peer-valid:-mt-15 absolute ml-4 transition-all pointer-events-none">Password</label>
 			</div>
 			<p className=' text-red-500 text-sm mt-1'>{loginError}</p>
 			<div className="flex w-full relative mt-2">
