@@ -7,35 +7,35 @@ datasource db {
 }
 
 model Category {
-  id      Int     @id @default(autoincrement())
-  name    String  @unique @db.VarChar(100)
-  Rice    Rice[]
+  id   Int    @id @default(autoincrement())
+  name String @unique @db.VarChar(100)
+  rice Rice[]
 }
 
 model Rice {
-  id             Int        @id @default(autoincrement())
-  name           String     @unique @db.VarChar(100)
-  company        String?    @db.VarChar(100)
-  categoryID     Int?
-  price          Float
-  stock          Int        @default(0)
-  rating         Decimal?   @db.Decimal(2, 1)
-  isAvailable    Boolean    @default(true)
-  imagePath      String?
-  imagePublicID  String?
-  weightKG       Float?
-  kg25           Boolean    @default(false)
-  kg50           Boolean    @default(false)
-  category       Category?  @relation(fields: [categoryID], references: [id])
+  id              Int       @id @default(autoincrement())
+  name            String    @unique @db.VarChar(100)
+  company         String?   @db.VarChar(100)
+  price           Float
+  stock           Int       @default(0)
+  rating          Decimal?  @db.Decimal(2, 1)
+  category_id     Int?
+  image_path      String?
+  image_public_id String?
+  is_25kg         Boolean   @default(false)
+  is_50kg         Boolean   @default(false)
+  is_available    Boolean   @default(true)
+  weight_kg       Float?
+  category        Category? @relation(fields: [category_id], references: [id])
 }
 
 model User {
-  id              Int       @id @default(autoincrement())
-  userName        String    @unique @db.VarChar(100)
+  id              Int     @id @default(autoincrement())
+  username        String  @unique @db.VarChar(100)
   password        String
-  email           String    @unique @db.VarChar(100)
-  isAdmin         Boolean   @default(false)
+  email           String  @unique @db.VarChar(100)
+  is_admin        Boolean @default(false)
   address         String?
-  imagePath       String?
-  imagePublicID   String?
+  image_path      String?
+  image_public_id String?
 }

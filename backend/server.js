@@ -45,15 +45,15 @@ const uploadProfileImage = multer({storage: storageProfileImage})
 
 // Verify login credentials in database and generate token
 app.post('/api/login', async (req, res) => {
-  	const { userName, userPassword} = req.body
+  	const { username, password} = req.body
   	try {
-    	const user = await prisma.User.findUnique({ where: {userName} })
-    	if(!user || user.password !== userPassword) return res.status(401).json({ error: 'Incorrect username or password' })
-    	const accessToken = jwt.sign({ userID: user.id, userName: user.userName, isAdmin: user.isAdmin }, process.env.JWT_SECRET_KEY, { expiresIn: '30m'})
-    	const refreshToken = jwt.sign({ userID: user.id, userName: user.userName, isAdmin: user.isAdmin }, process.env.JWT_SECRET_KEY, { expiresIn: '1h'})
-    
+    	const user = await prisma.User.findUnique({ where: {username} })
+    	if(!user || user.password !== password) return res.status(401).json({ error: 'Incorrect username or password' })
+    	const access_token = jwt.sign({ id: user.id, username: user.username, is_admin: user.is_admin }, process.env.JWT_SECRET_KEY, { expiresIn: '30m'})
+    	const refresh_token = jwt.sign({ id: user.id, username: user.username, is_admin: user.is_admin }, process.env.JWT_SECRET_KEY, { expiresIn: '1h'})
+
     // Store access token in cookie
-    	res.cookie("accessToken", accessToken, {
+    	res.cookie("access_token", access_token, {
       	httpOnly: true,
       	secure: false,
       	sameSite: "strict",
@@ -61,19 +61,22 @@ app.post('/api/login', async (req, res) => {
     	})
 
     // Store refresh token in cookie
-    	res.cookie("refreshToken", refreshToken, {
+    	res.cookie("refresh_token", refresh_token, {
       	httpOnly: true,
       	secure: false,
       	sameSite: "strict",
       	maxAge: 60 * 60 * 1000
     	})
-    	res.status(200).json({validLogin: true})
-  	} catch(err) {res.status(500).json({ error: 'Login went wrong', err })}
+    	res.status(200).json({valid_login: true})
+  	} catch(err) {
+		console.error('Prisma error: ', err)
+		res.status(500).json({ error: 'Login went wrong', err })
+	}
 })
 
 // Function to verify token
-function verifyToken(req, res, next) {
-  	const token = req.cookies.accessToken
+function verify_token(req, res, next) {
+  	const token = req.cookies.access_token
   	if(!token) return res.json({error: "No token found"})
   	try {
     	const decoded = jwt.verify(token, process.env.JWT_SECRET_KEY)
@@ -83,32 +86,37 @@ function verifyToken(req, res, next) {
 }
 
 // Verify if current user is logged in
-app.get('/api/verifyToken', verifyToken, async (req, res)=> {
-  	const currentToken = req.user
-  	const currentUser = await prisma.User.findUnique({where: {id: currentToken.userID}})
-  	res.status(200).json({message: "User is logged in", user: currentUser || null})
+app.get('/api/verifyToken', verify_token, async (req, res)=> {
+  	const current_token = req.user
+  	const current_user = await prisma.User.findUnique({where: {id: current_token.id}})
+  	res.status(200).json({message: "User is logged in", user: current_user || null})
 })
 
 // Function to verify admin
-function verifyAdmin(req, res, next) {
-  	if(!req.user || !req.user.isAdmin) {return res.status(403).json({error: "Access denied"})}
-  	next()
+function verify_admin(req, res, next) {
+	const token = req.cookies.access_token
+  	if(!token) return res.json({error: "No token found"})
+  	try {
+    	const decoded = jwt.verify(token, process.env.JWT_SECRET_KEY)
+    	req.user = decoded
+	  	next()
+	} catch(err) {return res.status(403).json({error: "Invalid or expired token"})}
 }
 
 // Verify if current user is admin
-app.get('/api/verifyAdmin', verifyToken, verifyAdmin, (req, res)=> {
-  	const isAdmin = req.user.isAdmin
-  	res.json({isAdmin})
+app.get('/api/verifyAdmin', verify_token, verify_admin, (req, res)=> {
+  	const is_admin = req.user.is_admin
+  	res.json({is_admin})
 })
 
 // Logout
-app.get('/api/logout', verifyToken, async (req, res)=> {
-  	res.clearCookie("accessToken", {
+app.get('/api/logout', verify_token, async (req,res)=> {
+  	res.clearCookie("access_token", {
     	httpOnly: true,
     	secure: false,
     	sameSite: "strict"
   	})
-  	res.clearCookie("refreshToken", {
+  	res.clearCookie("refresh_token", {
     	httpOnly: true,
     	secure: false,
     	sameSite: "strict"
@@ -117,7 +125,7 @@ app.get('/api/logout', verifyToken, async (req, res)=> {
 })
 
 // Get categories from database
-app.get('/api/getCategories', verifyToken, async (req, res)=> {
+app.get('/api/getCategories', verify_token, async (req, res)=> {
   	try {
     	const categories = await prisma.Category.findMany()
     	res.status(200).json({ categories })
@@ -125,19 +133,19 @@ app.get('/api/getCategories', verifyToken, async (req, res)=> {
 })
 
 // Add category to database
-app.post('/api/addCategory', verifyToken, verifyAdmin, async (req, res)=> {
-  	const { inputCategory } = req.body
+app.post('/api/addCategory', verify_token, verify_admin, async (req, res)=> {
+  	const { input_category } = req.body
   	try {
-    	await prisma.Category.create({ data: { name: inputCategory } })
+    	await prisma.Category.create({ data: { name: input_category } })
     	res.status(201).json({ message: 'Category created successfully!' })
   	} catch(err) {res.status(500).json({ error: 'Posting Category to database failed', err})}
 })
 
 // Delete category from database
-app.delete('/api/deleteCategory', verifyToken, verifyAdmin, async (req, res)=> {
-	const {selectedCategory} = req.body
+app.delete('/api/deleteCategory', verify_token, verify_admin, async (req, res)=> {
+	const {selected_category} = req.body
   	try {
-    	await prisma.Category.delete({where: {id: selectedCategory.id}})
+    	await prisma.Category.delete({where: {id: selected_category.id}})
     	res.status(200).json({message: 'Category deleted successfully!'})
   	} catch(err) {
     	console.error('Prisma error: ', err)
@@ -146,11 +154,11 @@ app.delete('/api/deleteCategory', verifyToken, verifyAdmin, async (req, res)=> {
 })
 
 // Edit category from database
-app.put('/api/editCategory', verifyToken, verifyAdmin, async (req, res)=> {
-	const {newInputCategory, categoryID} = req.body
+app.put('/api/editCategory', verify_token, verify_admin, async (req, res)=> {
+	const {new_input_category, category_id} = req.body
 	try {
-		await prisma.Category.update({where: {id: categoryID},
-			data: {name: newInputCategory}
+		await prisma.Category.update({where: {id: category_id},
+			data: {name: new_input_category}
 		})
 		res.status(200).json({message: 'Category edited successfully'})
 	}
@@ -160,20 +168,33 @@ app.put('/api/editCategory', verifyToken, verifyAdmin, async (req, res)=> {
 	}
 })
 
+// Get Rices from database
+app.get('/api/getRices', verify_token, async (req, res)=>{
+  	try {
+    	const rices = await prisma.Rice.findMany({orderBy: {id: 'asc'}, include: {category: true}})
+    	res.status(200).json({ rices })
+  	} catch(err) {
+    	console.error('Prisma error:', err)
+    	res.status(500).json({ message: 'Fetching Rices from database failed ', err})
+  	}
+})
+
 // Add rice to database
-app.post('/api/addRice', verifyToken, verifyAdmin, uploadRiceImage.single('imageFile'), async (req, res)=> {
-  	const {inputRice, inputCompany, inputCategoryID, inputPrice, inputStock, inputWeight} = req.body
+app.post('/api/addRice', verify_token, verify_admin, uploadRiceImage.single('image_file'), async (req, res)=> {
+  	const {input_rice, input_company, input_category_id, input_price, input_stock, input_25kg, input_50kg, input_weight} = req.body
   	try {
     	if (!req.file) {return res.status(400).json({message: 'No image upload'})}
     	await prisma.Rice.create({data: {
-      	name: inputRice, 
-      	company: inputCompany, 
-      	categoryID: parseInt(inputCategoryID),
-      	price: parseFloat(inputPrice), 
-      	stock: parseInt(inputStock), 
-      	weightKG: parseFloat(inputWeight),
-      	imagePath: req.file.path,
-      	imagePublicID: req.file.filename
+      	name: input_rice, 
+      	company: input_company, 
+			category_id: parseInt(input_category_id),
+      	price: parseFloat(input_price), 
+      	stock: parseInt(input_stock), 
+			is_25kg: Boolean(input_25kg),
+			is_50kg: Boolean(input_50kg),
+      	weight_kg: parseFloat(input_weight),
+      	image_path: req.file.path,
+      	image_public_id: req.file.filename
     	}})
     	res.status(200).json({message: 'Rice added successfully!'})
   	} catch(err) {
@@ -183,11 +204,11 @@ app.post('/api/addRice', verifyToken, verifyAdmin, uploadRiceImage.single('image
 })
 
 // Delete rice from database
-app.delete('/api/deleteRice', verifyToken, verifyAdmin, async (req, res)=> {
-  	const {selectedRice} = req.body
+app.delete('/api/deleteRice', verify_token, verify_admin, async (req, res)=> {
+  	const {selected_rice} = req.body
   	try {
-    	if(selectedRice.imagePublicID) await cloudinary.uploader.destroy(selectedRice.imagePublicID)
-    	await prisma.Rice.delete({where: {id: selectedRice.id}})
+    	if(selected_rice.image_public_id) await cloudinary.uploader.destroy(selected_rice.image_public_id)
+    	await prisma.Rice.delete({where: {id: selected_rice.id}})
     	res.status(200).json({message: 'Rice deleted successfully!'})
   	} catch(err) {
     	console.error('Prisma error: ', err)
@@ -196,23 +217,25 @@ app.delete('/api/deleteRice', verifyToken, verifyAdmin, async (req, res)=> {
 })
 
 // Edit rice in database
-app.put('/api/editRice', verifyToken, verifyAdmin, uploadRiceImage.single('newImageFile' || null), async (req, res)=> {
-  	const {newInputRice, newInputCompany, selectedCategoryID, newInputPrice, newInputStock, newInputWeight, oldImageID, riceID} = req.body
+app.put('/api/editRice', verify_token, verify_admin, uploadRiceImage.single('new_image_file'), async (req, res)=> {
+  	const {new_input_rice, new_input_company, selected_category_id, new_input_price, new_input_stock, new_input_25kg, new_input_50kg, new_input_weight, old_image_id, rice_id} = req.body
 	try {
-		const updateData = {
-			name: newInputRice,
-			company: newInputCompany,
-			categoryID: parseInt(selectedCategoryID),
-			price: parseFloat(newInputPrice),
-			stock: parseInt(newInputStock),
-			weightKG: parseFloat(newInputWeight)
+		const update_data = {
+			name: new_input_rice,
+			company: new_input_company,
+			category_id: parseInt(selected_category_id),
+			price: parseFloat(new_input_price),
+			stock: parseInt(new_input_stock),
+			is_25kg: new_input_25kg == 'true' ? true : false,
+			is_50kg: new_input_50kg == 'true' ? true : false,
+			weight_kg: parseFloat(new_input_weight)
 		}
 		if (req.file && req.file.path) {
-			await cloudinary.uploader.destroy(oldImageID)
-			updateData.imagePath = req.file.path
-			updateData.imagePublicID = req.file.filename
+			await cloudinary.uploader.destroy(old_image_id || '')
+			update_data.image_path = req.file.path
+			update_data.image_public_id = req.file.filename
 		}
-		await prisma.Rice.update({where: {id: parseInt(riceID)}, data: updateData})
+		await prisma.Rice.update({where: {id: parseInt(rice_id)}, data: update_data})
 		res.status(200).json({message: 'Rice edited successfully!'})
 	} catch(err) {
 	 	console.error('Prisma error: ', err)
@@ -220,19 +243,8 @@ app.put('/api/editRice', verifyToken, verifyAdmin, uploadRiceImage.single('newIm
   	}
 })
 
-// Get Rices from database
-app.get('/api/getRices', verifyToken, async (req, res)=>{
-  	try {
-    	const rices = await prisma.Rice.findMany({include: {category: {select: {name: true}}}})
-    	res.status(200).json({ rices })
-  	} catch(err) {
-    	console.error('Prisma error:', err)
-    	res.status(500).json({ message: 'Fetching Rices from database failed ', err})
-  	}
-})
-
 // Get Users from database
-app.get('/api/getUsers', verifyToken, verifyAdmin, async (req, res)=>{
+app.get('/api/getUsers', verify_token, verify_admin, async (req, res)=>{
   	try {
    	const users = await prisma.User.findMany()
     	res.status(200).json({ users })
@@ -240,17 +252,17 @@ app.get('/api/getUsers', verifyToken, verifyAdmin, async (req, res)=>{
 })
 
 // Add user to database
-app.post('/api/addUser', verifyToken, verifyAdmin, uploadProfileImage.single('profileFile'), async (req, res)=> {
-  	const {inputUserName, inputPassword, inputEmail, inputAddress, inputIsAdmin} = req.body
+app.post('/api/addUser', verify_token, verify_admin, uploadProfileImage.single('profile_file'), async (req, res)=> {
+  	const {input_username, input_password, input_email, input_address, input_is_admin} = req.body
 	try {
 		await prisma.User.create({data: {
-			userName: inputUserName,
-			password: inputPassword,
-			email: inputEmail || null,
-			address: inputAddress || null,
-			isAdmin: Boolean(inputIsAdmin),
-			imagePath: req.file ? req.file.path : null,
-			imagePublicID: req.file ? req.file.filename : null
+			username: input_username,
+			password: input_password,
+			email: input_email,
+			address: input_address || null,
+			is_admin: Boolean(input_is_admin),
+			image_path: req.file ? req.file.path : null,
+			image_public_id: req.file ? req.file.filename : null
 		}})
 		res.status(201).json({ message: 'User created successfully!' })
 	} catch(err) {
@@ -260,10 +272,10 @@ app.post('/api/addUser', verifyToken, verifyAdmin, uploadProfileImage.single('pr
 })
 
 // Delete user from database
-app.delete('/api/deleteUser', verifyToken, verifyAdmin, async (req, res)=> {
-  	const {selectedUser} = req.body
+app.delete('/api/deleteUser', verify_token, verify_admin, async (req, res)=> {
+  	const {selected_user} = req.body
 	try {
-	 	await prisma.User.delete({where: {id: selectedUser.id}})
+	 	await prisma.User.delete({where: {id: selected_user.id}})
 	 	res.status(200).json({message: 'User deleted successfully!'})
   	} catch(err) {
 	 	console.error('Prisma error: ', err)
@@ -272,22 +284,22 @@ app.delete('/api/deleteUser', verifyToken, verifyAdmin, async (req, res)=> {
 })
 
 // Edit user in database
-app.put('/api/editUser', verifyToken, verifyAdmin, uploadProfileImage.single('newProfileFile'), async (req, res)=> {
-  	const {newInputUserName, newInputPassword, newInputEmail, newInputAddress, newInputIsAdmin, oldProfileID, userID} = req.body
+app.put('/api/editUser', verify_token, verify_admin, uploadProfileImage.single('new_profile_file'), async (req, res)=> {
+  	const {new_input_username, new_input_password, new_input_email, new_input_address, new_input_is_admin, old_profile_id, user_id} = req.body
 	try {
-		const updateData = {
-			userName: newInputUserName || null,
-			password: newInputPassword || null,
-			email: newInputEmail || null,
-			address: newInputAddress || null,
-			isAdmin: Boolean(newInputIsAdmin) || false
+		const update_data = {
+			username: new_input_username || null,
+			password: new_input_password || null,
+			email: new_input_email,
+			address: new_input_address || null,
+			is_admin: new_input_is_admin == 'true' ? true : false
 		}
 		if (req.file && req.file.path) {
-			await cloudinary.uploader.destroy(oldProfileID)
-			updateData.imagePath = req.file.path
-			updateData.imagePublicID = req.file.filename
+			await cloudinary.uploader.destroy(old_profile_id)
+			update_data.image_path = req.file.path
+			update_data.image_public_id = req.file.filename
 		}
-		await prisma.User.update({where: {id: parseInt(userID)}, data: updateData})
+		await prisma.User.update({where: {id: parseInt(user_id)}, data: update_data})
 		res.status(200).json({message: 'User edited successfully!'})
 	} catch(err) {
 	 	console.error('Prisma error: ', err)
@@ -296,21 +308,21 @@ app.put('/api/editUser', verifyToken, verifyAdmin, uploadProfileImage.single('ne
 })
 
 // Edit self profile in database
-app.put('/api/editProfile', verifyToken, uploadProfileImage.single('newPictureFile'), async (req, res)=> {
-  	const {newUserName, newPassword, newEmail, newAddress, userID, oldPictureID} = req.body
+app.put('/api/editProfile', verify_token, uploadProfileImage.single('new_picture_file'), async (req, res)=> {
+  	const {new_username, new_password, new_email, new_address, user_id, old_picture_id} = req.body
 	try {
-		const updateData = {
-			userName: newUserName || null,
-			password: newPassword || null,
-			email: newEmail || null,
-			address: newAddress || null
+		const update_data = {
+			username: new_username || null,
+			password: new_password || null,
+			email: new_email,
+			address: new_address || null
 		}
 		if (req.file && req.file.path) {
-			await cloudinary.uploader.destroy(oldPictureID)
-			updateData.imagePath = req.file.path
-			updateData.imagePublicID = req.file.filename
+			await cloudinary.uploader.destroy(old_picture_id)
+			update_data.image_path = req.file.path
+			update_data.image_public_id = req.file.filename
 		}
-		await prisma.User.update({where: {id: parseInt(userID)}, data: updateData})
+		await prisma.User.update({where: {id: parseInt(user_id)}, data: update_data})
 		res.status(200).json({message: 'Profile edited successfully!'})
 	} catch(err) {
 	 	console.error('Prisma error: ', err)

@@ -11,22 +11,23 @@ import { apiPost, apiGet, apiDelete, apiPut } from './components/api'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faCircleXmark } from '@fortawesome/free-solid-svg-icons'
 import imageCompression from 'browser-image-compression'
+import toast, { Toaster } from 'react-hot-toast'
 
 export default function App() {
-	const [showAddCategoryModal, setShowAddCategoryModal] = useState(false)
-	const [showAddRiceModal, setShowAddRiceModal] = useState(false)
-	const [showAddUserModal, setShowAddUserModal] = useState(false)
-	const [showLogoutModal, setShowLogoutModal] = useState(false)
-	const [selectedRice, setSelectedRice] = useState(null)
-	const [showEditRiceModal, setShowEditRiceModal] = useState(false)
-	const [showEditCategoryModal, setShowEditCategoryModal] = useState(false)
-	const [showEditUserModal, setShowEditUserModal] = useState(false)
-	const [showDeleteRiceModal, setShowDeleteRiceModal] = useState(false)
-	const [showDeleteCategoryModal, setShowDeleteCategoryModal] = useState(false)
-	const [selectedUser, setSelectedUser] = useState(null)
-	const [showDeleteUserModal, setShowDeleteUserModal] = useState(false)
-	const [refresh, setRefresh] = useState(false)
-	const hideSadbarOn = ['/login', '/register', '/recoverAccount']
+	const [show_add_category_modal, set_show_add_category_modal] = useState(false)
+	const [show_add_rice_modal, set_show_add_rice_modal] = useState(false)
+	const [show_add_user_modal, set_show_add_user_modal] = useState(false)
+	const [show_logout_modal, set_show_logout_modal] = useState(false)
+	const [selected_rice, set_selected_rice] = useState(null)
+	const [show_edit_rice_modal, set_show_edit_rice_modal] = useState(false)
+	const [show_edit_category_modal, set_show_edit_category_modal] = useState(false)
+	const [show_edit_user_modal, set_show_edit_user_modal] = useState(false)
+	const [show_delete_rice_modal, set_show_delete_rice_modal] = useState(false)
+	const [show_delete_category_modal, set_show_delete_category_modal] = useState(false)
+	const [selected_user, set_selected_user] = useState(null)
+	const [show_delete_user_modal, set_show_delete_user_modal] = useState(false)
+	const [refresh, set_refresh] = useState(false)
+	const hide_sidebar_on = ['/login', '/register', '/recoverAccount']
 	const location = useLocation()
 	const navigate = useNavigate()
 	const options = {
@@ -35,400 +36,422 @@ export default function App() {
 	}
 
 	// Set value to sidebar and value to home
-	const [showCategory, setShowCategory] = useState(0)
+	const [show_category, set_show_category] = useState(0)
 
 	// Check if theres's existing token
-	const [user, setUser] = useState(null)
-	const [isLoading, setIsLoading] = useState(true)
-	const [validLogin, setValidLogin] = useState(false)
+	const [user, set_user] = useState(null)
+	const [is_loading, set_is_loading] = useState(true)
+	const [valid_login, set_valid_login] = useState(false)
 	useEffect(()=> {
 		const checkToken = async ()=> {
 			try {
 				console.log("Checking token...")
 				const data = await apiGet('/verifyToken')
 				if(data.user) {
-					setValidLogin(true)
-					setUser(data.user)
+					set_valid_login(true)
+					set_user(data.user)
 					console.log(data.message)
+					toast.success('Welcome back ' + data.user.username + '!')
 				}
 				else {
-					setValidLogin(false)
-					console.log("No user found, please login")
+					set_valid_login(false)
+					console.log("No user found.")
 				}
 			} catch(err) {
 				console.error('Checking token failed ', err)
-				setValidLogin(false)
-			} finally {setIsLoading(false)}
+				set_valid_login(false)
+			} finally {set_is_loading(false)}
 		}
 		checkToken()
-	}, [validLogin])
+	}, [valid_login])
 
 	// Redirect to login page if there's no token
-	const [prevLocation, setPrevLocation] = useState(useLocation())
+	const [prev_location, set_prev_location] = useState(useLocation())
 	useEffect(()=> {
-		if(validLogin === true) {
-			if(prevLocation.pathname === '/login') {navigate('/home', {replace:true})}
-			else {navigate(prevLocation, {replace:true}); setPrevLocation(prev => prev)}}
+		if(valid_login === true) {
+			if(prev_location.pathname === '/login') {navigate('/home', {replace:true})}
+			else {navigate(prev_location, {replace:true}); set_prev_location(prev => prev)}}
 		else {navigate('/login', {replace:true})}
-	}, [validLogin])
+	}, [valid_login])
 
 	// Fetch categories from the server
-	const [categories, setCategories] = useState([])
+	const [categories, set_categories] = useState([])
 	useEffect(()=> {
-		if(validLogin) {apiGet('/getCategories').then((data)=> {setCategories(data.categories)})}
-	}, [validLogin, refresh])
+		if(valid_login) {apiGet('/getCategories').then((data)=> {set_categories(data.categories)})}
+	}, [valid_login, refresh])
 
 	// Fetch Users from server
-	const [users, setUsers] = useState([])
+	const [users, set_users] = useState([])
 	useEffect(()=> {
-		if(validLogin) {apiGet('/getUsers').then((data)=> setUsers(data.users))}
-	}, [validLogin, refresh])
-	const totalUsers = users.length
+		if(valid_login) {apiGet('/getUsers').then((data)=> set_users(data.users))}
+	}, [valid_login, refresh])
+	const total_users = users?.length || 0
 
 	// Fetch rices from server
-	const [rices, setRices] = useState([])
+	const [rices, set_rices] = useState([])
 	useEffect(()=> {
-		if(validLogin) {apiGet('/getRices').then((data)=> setRices(data.rices))}
-	}, [validLogin, refresh])
-	const totalRices = rices.length
+		if(valid_login) {apiGet('/getRices').then((data)=> set_rices(data.rices ? data.rices : []))}
+	}, [valid_login, refresh])
+	const total_rices = rices.length || 0
 
 	// Send category to the server
-	const [inputCategory, setInputCategory] = useState('')
-	function addCategory() {
-		apiPost('/addCategory', {inputCategory}).then((data)=> {
-			alert(data.message)
-			setInputCategory('')
-			setShowAddCategoryModal(false)
-			setRefresh(prev => !prev)
+	const [input_category, set_input_category] = useState('')
+	function add_category() {
+		apiPost('/addCategory', {input_category: input_category}).then((data)=> {
+			toast(data.message)
+			set_input_category('')
+			set_show_add_category_modal(false)
+			set_refresh(prev => !prev)
 		})
 	}
 
 	// Function to delete category
-	const [selectedCategory, setSelectedCategory] = useState(null)
+	const [selected_category, set_selected_category] = useState(null)
 	function deleteCategory() {
-		apiDelete('/deleteCategory', {selectedCategory}).then((data)=> {
-			alert(data.message)
-			setShowDeleteCategoryModal(false)
-			setRefresh(prev => !prev)
+		apiDelete('/deleteCategory', {selected_category: selected_category}).then((data)=> {
+			toast(data.message)
+			set_show_delete_category_modal(false)
+			set_refresh(prev => !prev)
 		})
 	}
 	
 	// New variables for editing category
-	const [newInputCategory, setNewInputCategory] = useState('')
-	const [categoryID, setCategoryID] = useState(null)
+	const [new_input_category, set_new_input_category] = useState('')
+	const [category_id, set_category_id] = useState(null)
 	useEffect(()=> {
-		if(!selectedCategory) return
-		setNewInputCategory(selectedCategory.name || '')
-		setCategoryID(selectedCategory.id || null)
-	}, [selectedCategory])
+		if(!selected_category) return
+		set_new_input_category(selected_category.name || '')
+		set_category_id(selected_category.id || null)
+	}, [selected_category])
 
 	// Function to edit category
 	function editCategory() {
-		apiPut('/editCategory', {newInputCategory, categoryID}).then((data)=> {
-			alert(data.message)
-			setShowEditCategoryModal(false)
-			setRefresh(prev => !prev)
-			setNewInputCategory('')
-			setSelectedCategory(null)
-			setCategoryID(null)
+		apiPut('/editCategory', {new_input_category: new_input_category, category_id: category_id}).then((data)=> {
+			toast(data.message)
+			set_show_edit_category_modal(false)
+			set_refresh(prev => !prev)
+			set_new_input_category('')
+			set_selected_category(null)
+			set_category_id(null)
 		})
 	}
 
 	// Send rice to the server
-	const [inputRice, setInputRice] = useState('')
-	const [inputCompany, setInputCompany] = useState('')
-	const [inputCategoryName, setInputCategoryName] = useState('')
-	const [inputPrice, setInputPrice] = useState('')
-	const [inputStock, setInputStock] = useState('')
-	const [inputWeight, setInputWeight] = useState('')
-	const [imagePreview, setImagePreview] = useState(null)
-	const [imageFile, setImageFile] = useState(null)
-	function addRice() {
+	const [input_rice, set_input_rice] = useState('')
+	const [input_company, set_input_company] = useState('')
+	const [input_category_name, set_input_category_name] = useState('')
+	const [input_price, set_input_price] = useState('')
+	const [input_stock, set_input_stock] = useState('')
+	const [input_kg25, set_input_kg25] = useState(false)
+	const [input_kg50, set_input_kg50] = useState(false)
+	const [input_weight, set_input_weight] = useState('')
+	const [image_preview, set_image_preview] = useState(null)
+	const [image_file, set_image_file] = useState(null)
+	function add_rice() {
 		// find category id of input category name
-		const category = categories.find(c => c.name === inputCategoryName)
-		const selectedCategoryID = category ? category.id : null
+		const category = categories.find(c => c.name === input_category_name)
+		const selected_category_id = category ? category.id : null
 		// send data to server with new rice image
 		const formData = new FormData()
-		formData.append('inputRice', inputRice)
-		formData.append('inputCompany', inputCompany)
-		formData.append('inputCategoryID', selectedCategoryID)
-		formData.append('inputPrice', inputPrice)
-		formData.append('inputStock', inputStock)
-		formData.append('inputWeight', inputWeight)
-		formData.append('imageFile', imageFile)
+		formData.append('input_rice', input_rice)
+		formData.append('input_company', input_company)
+		formData.append('input_category_id', selected_category_id)
+		formData.append('input_price', input_price)
+		formData.append('input_stock', input_stock)
+		formData.append('input_kg25', input_kg25)
+		formData.append('input_kg50', input_kg50)
+		formData.append('input_weight', input_weight)
+		formData.append('image_file', image_file)
 		apiPost('/addRice', formData).then((data)=> {
-			alert(data.message)
-			setShowAddRiceModal(false)
-			setRefresh(prev => !prev)
-			setInputRice('')
-			setInputCompany('')
-			setInputCategoryName(null)
-			setInputPrice('')
-			setInputStock('')
-			setInputWeight('')
-			url.revokeObjectURL(imagePreview)
-			setImagePreview(null)
-			setImageFile(null)
+			toast(data.message)
+			set_show_add_rice_modal(false)
+			set_refresh(prev => !prev)
+			set_input_rice('')
+			set_input_company('')
+			set_input_category_name(null)
+			set_input_price('')
+			set_input_stock('')
+			set_input_kg25(false)
+			set_input_kg50(false)
+			set_input_weight('')
+			URL.revokeObjectURL(image_preview)
+			set_image_preview(null)
+			set_image_file(null)
 		})
 	}
 	// Change image file when uploaded image changed
-	async function imageOnChange(e) {
+	async function image_on_change(e) {
 		const image = e.target.files[0]
 		const squaredImage = await imageCompression(image, options)
 		if(squaredImage) {
-			URL.revokeObjectURL(imagePreview)
-			setImagePreview(URL.createObjectURL(squaredImage))
-			setImageFile(squaredImage)
+			URL.revokeObjectURL(image_preview)
+			set_image_preview(URL.createObjectURL(squaredImage))
+			set_image_file(squaredImage)
 		}
-		else setImageFile(null)
+		else set_image_file(null)
 	}
 
 	// Function to delete rice
-	function deleteRice() {
-		apiDelete('/deleteRice', {selectedRice}).then((data)=> {
-			alert(data.message)
-			setShowDeleteRiceModal(false)
-			setRefresh(prev => !prev)
+	function delete_rice() {
+		apiDelete('/deleteRice', {selected_rice: selected_rice}).then((data)=> {
+			toast(data.message)
+			set_show_delete_rice_modal(false)
+			set_refresh(prev => !prev)
 		})
 	}
 
 	// New variables for editing rice
-	const [newInputRice, setNewInputRice] = useState('')
-	const [newInputCompany, setNewInputCompany] = useState('')
-	const [newInputCategoryName, setNewInputCategoryName] = useState('')
-	const [newInputPrice, setNewInputPrice] = useState('')
-	const [newInputStock, setNewInputStock] = useState('')
-	const [newInputWeight, setNewInputWeight] = useState('')
-	const [newImagePreview, setNewImagePreview] = useState(null)
-	const [newImageFile, setNewImageFile] = useState(null)
+	const [new_input_rice, set_new_input_rice] = useState('')
+	const [new_input_company, set_new_input_company] = useState('')
+	const [new_input_category_name, set_new_input_category_name] = useState('')
+	const [new_input_price, set_new_input_price] = useState('')
+	const [new_input_stock, set_new_input_stock] = useState('')
+	const [new_input_25kg, set_new_input_25kg] = useState(false)
+	const [new_input_50kg, set_new_input_50kg] = useState(false)
+	const [new_input_weight, set_new_input_weight] = useState('')
+	const [new_image_preview, set_new_image_preview] = useState(null)
+	const [new_image_file, set_new_image_file] = useState(null)
 	useEffect(()=> {
-		if(!selectedRice) return
-		setNewInputRice(selectedRice.name || '')
-		setNewInputCompany(selectedRice.company || '')
+		if(!selected_rice) return
+		set_new_input_rice(selected_rice.name || '')
+		set_new_input_company(selected_rice.company || '')
 		// Find category name of selected rice
-		const selectedEditCategory = categories.find(c => c.id === selectedRice.categoryID)
-		setNewInputCategoryName(selectedEditCategory?.name || '')
-		setNewInputPrice(selectedRice.price || '')
-		setNewInputStock(selectedRice.stock || '')
-		setNewInputWeight(selectedRice.weightKG || '')
-		setNewImagePreview(selectedRice.imagePath || '')
-	}, [selectedRice])
+		const selected_edit_category = categories.find(c => c.id === selected_rice.category_id)
+		set_new_input_category_name(selected_edit_category?.name || '')
+		set_new_input_price(selected_rice.price || '')
+		set_new_input_stock(selected_rice.stock || '')
+		set_new_input_25kg(selected_rice.is_25kg || false)
+		set_new_input_50kg(selected_rice.is_50kg || false)
+		set_new_input_weight(selected_rice.weight_kg || '')
+		set_new_image_preview(selected_rice.image_path || '')
+	}, [selected_rice])
 	// Change new image file when uploaded image changed
-	async function newImageOnChange(e) {
+	async function new_image_on_change(e) {
 		const image = e.target.files[0]
 		const squaredImage = await imageCompression(image, options)
 		if(squaredImage) {
-			URL.revokeObjectURL(newImagePreview)
-			setNewImagePreview(URL.createObjectURL(squaredImage))
-			setNewImageFile(squaredImage)
+			URL.revokeObjectURL(new_image_preview)
+			set_new_image_preview(URL.createObjectURL(squaredImage))
+			set_new_image_file(squaredImage)
 		}
 	}
 
 	// Function to edit rice
-	function editRice() {
+	function edit_rice() {
 		// find category of new category name
-		const selectedCategory = categories.find(c => c.name === newInputCategoryName)
+		const selected_category = categories.find(c => c.name === new_input_category_name)
 		// send data to server with new rice image
 		const formData = new FormData()
-		formData.append('newInputRice', newInputRice || '')
-		formData.append('newInputCompany', newInputCompany || '')
-		formData.append('selectedCategoryID', selectedCategory.id || null)
-		formData.append('newInputPrice', newInputPrice || '')
-		formData.append('newInputStock', newInputStock || '')
-		formData.append('newInputWeight', newInputWeight || '')
-		formData.append('oldImageID', selectedRice.imagePublicID || null)
-		formData.append('riceID', selectedRice.id || null)
-		formData.append('newImageFile', newImageFile || null)
+		formData.append('new_input_rice', new_input_rice || '')
+		formData.append('new_input_company', new_input_company || '')
+		formData.append('selected_category_id', selected_category ? selected_category.id : null)
+		formData.append('new_input_price', new_input_price || '')
+		formData.append('new_input_stock', new_input_stock || '')
+		formData.append('new_input_25kg', new_input_25kg || false)
+		formData.append('new_input_50kg', new_input_50kg || false)
+		formData.append('new_input_weight', new_input_weight || '')
+		formData.append('old_image_id', selected_rice.image_public_id || null)
+		formData.append('rice_id', selected_rice.id || null)
+		formData.append('new_image_file', new_image_file || null)
 		apiPut('/editRice', formData).then((data)=> {
-			alert(data.message)
-			setRefresh(prev => !prev)
-			setShowEditRiceModal(false)
-			setNewInputRice('')
-			setNewInputCompany('')
-			setNewInputCategoryName('')
-			setNewInputPrice('')
-			setNewInputStock('')
-			setNewInputWeight('')
-			setNewImageFile(null)
-			setSelectedRice(null)
-			URL.revokeObjectURL(newImagePreview)
-			setNewImagePreview(null)
+			toast(data.message)
+			set_refresh(prev => !prev)
+			set_show_edit_rice_modal(false)
+			set_new_input_rice('')
+			set_new_input_company('')
+			set_new_input_category_name('')
+			set_new_input_price('')
+			set_new_input_stock('')
+			set_new_input_25kg(false)
+			set_new_input_50kg(false)
+			set_new_input_weight('')
+			set_new_image_file(null)
+			set_selected_rice(null)
+			URL.revokeObjectURL(new_image_preview)
+			set_new_image_preview(null)
 		})
 	}
 
 	// Function to add user
-	const [inputUserName, setInputUserName] = useState('')
-	const [inputPassword, setInputPassword] = useState('')
-	const [inputEmail, setInputEmail] = useState('')
-	const [inputAddress, setInputAddress] = useState('')
-	const [inputIsAdmin, setInputIsAdmin] = useState(false)
-	const [profilePreview, setProfilePreview] = useState(null)
-	const [profileFile, setProfileFile] = useState(null)
-	function addUser() {
+	const [input_username, set_input_username] = useState('')
+	const [input_password, set_input_password] = useState('')
+	const [input_email, set_input_email] = useState('')
+	const [input_address, set_input_address] = useState('')
+	const [input_is_admin, set_input_is_admin] = useState(false)
+	const [profile_preview, set_profile_preview] = useState(null)
+	const [profile_file, set_profile_file] = useState(null)
+	function add_user() {
 		const formData = new FormData()
-		formData.append('inputUserName', inputUserName)
-		formData.append('inputPassword', inputPassword)
-		formData.append('inputEmail', inputEmail || '')
-		formData.append('inputAddress', inputAddress || '')
-		formData.append('inputIsAdmin', inputIsAdmin)
-		formData.append('profileFile', profileFile || null)
+		formData.append('input_username', input_username)
+		formData.append('input_password', input_password)
+		formData.append('input_email', input_email || '')
+		formData.append('input_address', input_address || '')
+		formData.append('input_is_admin', input_is_admin)
+		formData.append('profile_file', profile_file || null)
 		apiPost('/addUser', formData).then((data)=> {
-			alert(data.message)
-			setShowAddUserModal(false)
-			setRefresh(prev => !prev)
-			setInputUserName('')
-			setInputPassword('')
-			setInputEmail('')
-			setInputAddress('')
-			setInputIsAdmin(false)
-			URL.revokeObjectURL(profilePreview)
-			setProfilePreview(null)
+			toast(data.message)
+			set_show_add_user_modal(false)
+			set_refresh(prev => !prev)
+			set_input_username('')
+			set_input_password('')
+			set_input_email('')
+			set_input_address('')
+			set_input_is_admin(false)
+			URL.revokeObjectURL(profile_preview)
+			set_profile_preview(null)
 		})
 	}
 	// Change profile file when uploaded profile changed
-	async function profileOnChange(e) {
+	async function profile_on_change(e) {
 		const image = e.target.files[0]
 		const squaredImage = await imageCompression(image, options)
 		if(squaredImage) {
-			URL.revokeObjectURL(profilePreview)
-			setProfilePreview(URL.createObjectURL(squaredImage))
-			setProfileFile(squaredImage)
+			URL.revokeObjectURL(profile_preview)
+			set_profile_preview(URL.createObjectURL(squaredImage))
+			set_profile_file(squaredImage)
 		}
 	}
 
 	// Function to delete user
-	function deleteUser() {
-		apiDelete('/deleteUser', {selectedUser}).then((data)=> {
-			alert(data.message)
-			setShowDeleteUserModal(false)
-			setSelectedUser(null)
-			setRefresh(prev => !prev)
+	function delete_user() {
+		apiDelete('/deleteUser', {selected_user: selected_user}).then((data)=> {
+			toast(data.message)
+			set_show_delete_user_modal(false)
+			set_selected_user(null)
+			set_refresh(prev => !prev)
 		})
 	}
 	
 	// New variables for editing user
-	const [newInputUserName, setNewInputUserName] = useState('')
-	const [newInputPassword, setNewInputPassword] = useState('')
-	const [newInputEmail, setNewInputEmail] = useState('')
-	const [newInputAddress, setNewInputAddress] = useState('')
-	const [newInputIsAdmin, setNewInputIsAdmin] = useState('')
-	const [newProfilePreview, setNewProfilePreview] = useState(null)
-	const [newProfileFile, setNewProfileFile] = useState(null)
+	const [new_input_username, set_new_input_username] = useState('')
+	const [new_input_password, set_new_input_password] = useState('')
+	const [new_input_email, set_new_input_email] = useState('')
+	const [new_input_address, set_new_input_address] = useState('')
+	const [new_input_is_admin, set_new_input_is_admin] = useState('')
+	const [new_profile_preview, set_new_profile_preview] = useState(null)
+	const [new_profile_file, set_new_profile_file] = useState(null)
 	useEffect(()=> {
-		if(!selectedUser) return
-		setNewInputUserName(selectedUser.userName || '')
-		setNewInputPassword(selectedUser.password || '')
-		setNewInputEmail(selectedUser.email || '')
-		setNewInputAddress(selectedUser.address || '')
-		setNewInputIsAdmin(selectedUser.isAdmin || false)
-		setNewProfilePreview(selectedUser.imagePath || null)
-	}, [selectedUser])
+		if(!selected_user) return
+		set_new_input_username(selected_user.username || '')
+		set_new_input_password(selected_user.password || '')
+		set_new_input_email(selected_user.email || '')
+		set_new_input_address(selected_user.address || '')
+		set_new_input_is_admin(selected_user.is_admin || false)
+		set_new_profile_preview(selected_user.image_path || null)
+	}, [selected_user])
 	// Change new profile file when uploaded profile picture changed
-	async function newProfileOnChange(e) {
+	async function new_profile_on_change(e) {
 		const image = e.target.files[0]
 		const squaredImage = await imageCompression(image, options)
 		if(squaredImage) {
-			URL.revokeObjectURL(newProfilePreview)
-			setNewProfilePreview(URL.createObjectURL(squaredImage))
-			setNewProfileFile(squaredImage)
+			URL.revokeObjectURL(new_profile_preview)
+			set_new_profile_preview(URL.createObjectURL(squaredImage))
+			set_new_profile_file(squaredImage)
 		}
 	}
 
 	// Function to edit user
 	function editUser() {
 		const formData = new FormData()
-		formData.append('newInputUserName', newInputUserName || '')
-		formData.append('newInputPassword', newInputPassword || '')
-		formData.append('newInputEmail', newInputEmail || '')
-		formData.append('newInputAddress', newInputAddress || '')
-		formData.append('newInputIsAdmin', newInputIsAdmin || false)
-		formData.append('oldProfileID', selectedUser.imagePublicID || null)
-		formData.append('userID', selectedUser.id || null)
-		formData.append('newProfileFile', newProfileFile || null)
+		formData.append('new_input_username', new_input_username || '')
+		formData.append('new_input_password', new_input_password || '')
+		formData.append('new_input_email', new_input_email || '')
+		formData.append('new_input_address', new_input_address || '')
+		formData.append('new_input_is_admin', new_input_is_admin || false)
+		formData.append('old_profile_id', selected_user.image_public_id || null)
+		formData.append('user_id', selected_user.id || null)
+		formData.append('new_profile_file', new_profile_file || null)
 		apiPut('/editUser', formData).then((data)=> {
-			alert(data.message)
-			setRefresh(prev => !prev)
-			setShowEditUserModal(false)
-			setNewInputUserName('')
-			setNewInputPassword('')
-			setNewInputEmail('')
-			setNewInputAddress('')
-			setNewInputIsAdmin(false)
-			setNewProfileFile(null)
-			setSelectedUser(null)
-			URL.revokeObjectURL(newProfilePreview)
-			setNewProfilePreview(null)
+			toast(data.message)
+			set_refresh(prev => !prev)
+			set_show_edit_user_modal(false)
+			set_new_input_username('')
+			set_new_input_password('')
+			set_new_input_email('')
+			set_new_input_address('')
+			set_new_input_is_admin(false)
+			set_new_profile_file(null)
+			set_selected_user(null)
+			URL.revokeObjectURL(new_profile_preview)
+			set_new_profile_preview(null)
 		})
 	}
 
 	// Prevent app to render if there's no user, wait for token checking
-	if(isLoading) return <div className="w-full top-0 flex justify-center items-center absolute h-full family-roboto"><p className='text-9xl opacity-50'>Loading...</p></div>
+	if(is_loading) return <div className="w-full top-0 flex justify-center items-center absolute h-full family-roboto"><p className='text-9xl opacity-50'>Loading...</p></div>
 
 	// Logout function
 	function logout() {
+		set_valid_login(false)
+		set_show_logout_modal(false)
 		apiGet('/logout')
-		setValidLogin(false)
-		setShowLogoutModal(false)
 		navigate('/login', {replace:true})
-		setPrevLocation(useLocation())
+		toast.success('Logged out successfully!')
+		set_prev_location(location)
 	}
 
-
    return(
-		<main className="flex w-full family-roboto absolute justify-center items-center top-0 text-neutral-800 bg-[url('./assets/riceBG.jpg')] bg-center bg-cover">
+		<main className="flex w-full family-roboto absolute justify-center items-center top-0 text-neutral-800 bg-[url('./assets/rice_BG.jpg')] bg-center bg-cover">
 			<section className="w-[80%] left-[10%] h-screen overflow-auto relative text-neutral-900">
 				<Routes>
-					<Route path='/' element={<Navigate to={validLogin ? '/home' : '/login'} replace />} />
-					<Route path='/login' element={<Login setValidLogin={setValidLogin} validLogin={validLogin} />}/>
+					<Route path='/' element={<Navigate to={valid_login ? '/home' : '/login'} replace />} />
+					<Route path='/login' element={<Login set_valid_login={set_valid_login} valid_login={valid_login} />}/>
 					<Route path='/register' element={<Navigate to='/login'/>}/>
 					<Route path='/recoverAccount' element={<Navigate to='/login'/>}/>
 					<Route path='/checkout' element={<Checkout />}/>
-					<Route path='/riceInfo' element={<RiceInfo selectedRice={selectedRice} />}/>
-					<Route path='/profile' element={<Profile user={user} setShowLogoutModal={setShowLogoutModal} options={options} setRefresh={setRefresh} />}/>
+					<Route path='/riceInfo' element={<RiceInfo selected_rice={selected_rice} />}/>
+					<Route path='/profile' element={<Profile user={user} set_show_logout_modal={set_show_logout_modal} options={options} set_refresh={set_refresh} />}/>
 					<Route path='/home' element={<Home 
-						showCategory={showCategory} 
+						show_category={show_category} 
 						categories={categories}
 						rices={rices}
-						setSelectedRice={setSelectedRice}
-						setRefresh={setRefresh}
+						set_selected_rice={set_selected_rice}
 					/>} />
 					<Route path='/admin' element={<Admin 
-						setShowAddCategoryModal={setShowAddCategoryModal} 
-						setShowAddRiceModal={setShowAddRiceModal} 
-						setShowAddUserModal={setShowAddUserModal}
-						setShowDeleteRiceModal={setShowDeleteRiceModal}
-						setShowEditRiceModal={setShowEditRiceModal}
-						setShowEditCategoryModal={setShowEditCategoryModal}
-						setShowEditUserModal={setShowEditUserModal}
-						setShowDeleteCategoryModal={setShowDeleteCategoryModal}
-						setShowDeleteUserModal={setShowDeleteUserModal}
-						setSelectedRice={setSelectedRice}
-						setSelectedCategory={setSelectedCategory}
-						setSelectedUser={setSelectedUser}
+						set_show_add_category_modal={set_show_add_category_modal} 
+						set_show_add_rice_modal={set_show_add_rice_modal} 
+						set_show_add_user_modal={set_show_add_user_modal}
+						set_show_delete_rice_modal={set_show_delete_rice_modal}
+						set_show_edit_rice_modal={set_show_edit_rice_modal}
+						set_show_edit_category_modal={set_show_edit_category_modal}
+						set_show_edit_user_modal={set_show_edit_user_modal}
+						set_show_delete_category_modal={set_show_delete_category_modal}
+						set_show_delete_user_modal={set_show_delete_user_modal}
+						set_selected_rice={set_selected_rice}
+						set_selected_category={set_selected_category}
+						set_selected_user={set_selected_user}
 						users={users}
 						categories={categories}
-						totalUsers={totalUsers}
+						total_users={total_users}
 						rices={rices}
-						totalRices={totalRices}
+						total_rices={total_rices}
 					/>}/>
 				</Routes>
+				<Toaster toastOptions={{
+					duration: 1500,
+					style: {
+						background: '#af4c0f',
+						color: '#FFFFFF',
+						fontWeight: 'bold',
+					}
+				}}/>
 			</section>
 
 			{/* Show sidebar but not in login */}
-			{!hideSadbarOn.includes(location.pathname) && <SideBar 
-				setShowCategory={setShowCategory} 
+			{!hide_sidebar_on.includes(location.pathname) && <SideBar 
+				set_show_category={set_show_category} 
 				categories={categories}
 				user={user}
 				refresh={refresh} 
 			/>} 
 
 			{/* Category add form */}
-			{showAddCategoryModal && (
-				<main onClick={()=> setShowAddCategoryModal(false)}  className='absolute top-0 left-0 w-full h-full bg-neutral-950/70 flex justify-center items-center' >
-					<form onSubmit={(e)=> {addCategory(); e.preventDefault()}} onClick={(e)=> e.stopPropagation()}  className="w-1/3 p-6 gap-5 bg-khaki flex flex-col rounded-2xl items-center shadow-2xl">
+			{show_add_category_modal && (
+				<main onClick={()=> set_show_add_category_modal(false)}  className='absolute top-0 left-0 w-full h-full bg-neutral-950/70 flex justify-center items-center' >
+					<form onSubmit={(e)=> {add_category(); e.preventDefault()}} onClick={(e)=> e.stopPropagation()}  className="w-1/3 p-6 gap-5 bg-khaki flex flex-col rounded-2xl items-center shadow-2xl">
 						<p className='text-2xl text-sageGreen font-bold' >ADD NEW CATEGORY</p>
 						<div className="w-full flex items-center">
-							<input type="text" value={inputCategory} onChange={(e)=> setInputCategory(e.target.value)} required name="inputCategory" className="peer flex-1 border rounded-3xl p-2 px-3" />
+							<input type="text" value={input_category} onChange={(e)=> set_input_category(e.target.value)} required name="inputCategory" className="peer flex-1 border rounded-3xl p-2 px-3" />
 							<label htmlFor="inputCategory"  className='text-lg select-none peer-focus:text-xs peer-valid:text-xs peer-focus:-mt-15 peer-valid:-mt-15 absolute ml-4 transition-all pointer-events-none' >Category Name</label>
 						</div>
 						<input type="submit" className=" p-2 px-3 w-full cursor-pointer rounded-full bg-brown text-offwhite font-semibold" />
@@ -437,26 +460,26 @@ export default function App() {
 			)}
 
 			{/* Delete category confirmation */}
-			{showDeleteCategoryModal && (
-				<main onClick={()=> {setShowDeleteCategoryModal(false); setSelectedCategory(null)}}  className='absolute top-0 left-0 w-full h-full bg-gray-950/70 flex justify-center items-center text-neutral-900' >
+			{show_delete_category_modal && (
+				<main onClick={()=> {set_show_delete_category_modal(false); set_selected_category(null)}}  className='absolute top-0 left-0 w-full h-full bg-gray-950/70 flex justify-center items-center text-neutral-900' >
 					<section onClick={(e)=> e.stopPropagation()}  className="p-10 gap-10 justify-center relative bg-khaki flex flex-col rounded-2xl items-center shadow-2xl" >
 						<p  className='text-2xl text-sageGreen font-bold' >DELETE CATEGORY</p>
-						<p className='text-6xl text-sageGreen font-semibold' >{selectedCategory.name}</p>
+						<p className='text-6xl text-sageGreen font-semibold' >{selected_category.name}</p>
 						<div className='w-full flex justify-around items-center'>
 							<button onClick={()=> deleteCategory()}  className="p-1 w-1/3 text-lg font-bold rounded-3xl bg-red-500 text-offwhite" >Delete</button>
-							<button onClick={()=> {setShowDeleteCategoryModal(false); setSelectedCategory(null)}}  className="p-1 w-1/3 text-lg font-bold rounded-3xl bg-blue-500 text-offwhite" >Cancel</button>
+							<button onClick={()=> {set_show_delete_category_modal(false); set_selected_category(null)}}  className="p-1 w-1/3 text-lg font-bold rounded-3xl bg-blue-500 text-offwhite" >Cancel</button>
 						</div>
 					</section>
 				</main>
 			)}
 
 			{/* Edit category form */}
-			{showEditCategoryModal && (
-				<main onClick={()=> {setShowEditCategoryModal(false); setSelectedCategory(null)}}  className='absolute top-0 left-0 w-full h-full bg-neutral-950/70 flex justify-center items-center' >
+			{show_edit_category_modal && (
+				<main onClick={()=> {set_show_edit_category_modal(false); set_selected_category(null)}}  className='absolute top-0 left-0 w-full h-full bg-neutral-950/70 flex justify-center items-center' >
 					<form onSubmit={(e)=> {editCategory(); e.preventDefault()}} onClick={(e)=> e.stopPropagation()}  className="w-1/3 p-6 gap-5 bg-khaki flex flex-col rounded-2xl items-center shadow-2xl">
 						<p className='text-2xl text-sageGreen font-bold' >EDIT CATEGORY</p>
 						<div className="w-full flex items-center">
-							<input type="text" value={newInputCategory} onChange={(e)=> setNewInputCategory(e.target.value)} required  className="peer flex-1 border rounded-3xl p-2 px-3" />
+							<input type="text" value={new_input_category} onChange={(e)=> set_new_input_category(e.target.value)} required  className="peer flex-1 border rounded-3xl p-2 px-3" />
 							<label htmlFor="inputCategory"  className='text-lg select-none peer-focus:text-xs peer-valid:text-xs peer-focus:-mt-15 peer-valid:-mt-15 absolute ml-4 transition-all' >Category Name</label>
 						</div>
 						<input type="submit" className=" p-2 px-3 w-full rounded-full bg-brown text-offwhite font-semibold" />
@@ -465,47 +488,47 @@ export default function App() {
 			)}
 
 			{/* Rice add form */}
-			{showAddRiceModal && (
-				<main onClick={()=> setShowAddRiceModal(false)}  className='absolute top-0 left-0 w-full h-full bg-neutral-950/70 flex justify-center items-center text-white' >
-					<form onSubmit={(e)=> {addRice(); e.preventDefault()}} onClick={(e)=> e.stopPropagation()}  className="w-2/3 gap-5 p-6 text-neutral-900 bg-khaki grid grid-cols-2 grid-rows-[auto] rounded-2xl shadow-2xl" >
+			{show_add_rice_modal && (
+				<main onClick={()=> set_show_add_rice_modal(false)}  className='absolute top-0 left-0 w-full h-full bg-neutral-950/70 flex justify-center items-center text-white' >
+					<form onSubmit={(e)=> {add_rice(); e.preventDefault()}} onClick={(e)=> e.stopPropagation()}  className="w-2/3 gap-5 p-6 text-neutral-900 bg-khaki grid grid-cols-2 grid-rows-[auto] rounded-2xl shadow-2xl" >
 						<p className='text-2xl text-sageGreen font-bold col-span-2 place-self-center' >ADD RICE</p>
-						<div className='border-2 border-sageGreen rounded-xl row-span-8 w-full h-full' >{imagePreview ? (
-							<img src={imagePreview} alt="Rice Image.png" className='w-full h-full rounded-xl' />
+						<div className='border-2 border-sageGreen rounded-xl row-span-8 w-full h-full' >{image_preview ? (
+							<img src={image_preview} alt="Rice Image.png" className='w-full h-full rounded-xl' />
 							) : (<p className='flex justify-center items-center w-full h-full text-sageGreen opacity-50 text-4xl' >No Image Selected</p>)}
 						</div>
 						<div className='w-full relative flex'>
 							<label htmlFor="riceImage"  className='w-1/3 text-center text-offwhite rounded-full p-2 px-3 cursor-pointer bg-brown hover:scale-103 active:scale-100' >Upload Image</label>
-							<input type="file" id="riceImage" onChange={(e)=> imageOnChange(e)} accept='image/*' required  className='hidden' />
+							<input type="file" id="riceImage" onChange={(e)=> image_on_change(e)} accept='image/*' required  className='hidden' />
 						</div>
 						<div className="w-full flex items-center">
-							<input type="text" value={inputRice} onChange={(e)=> setInputRice(e.target.value)} required name="riceName" className="peer flex-1 border rounded-3xl p-2 px-3" />
+							<input type="text" value={input_rice} onChange={(e)=> set_input_rice(e.target.value)} required name="riceName" className="peer flex-1 border rounded-3xl p-2 px-3" />
 							<label htmlFor="riceName"  className='text-lg select-none peer-focus:text-xs peer-valid:text-xs peer-focus:-mt-15 peer-valid:-mt-15 absolute ml-4 transition-all pointer-events-none'>Rice Name</label>
 						</div>
 						<div className="w-full flex items-center">
-							<input type="text" value={inputCompany} onChange={(e)=> setInputCompany(e.target.value)} name="riceCompany" placeholder=' '  className="peer flex-1 border rounded-3xl p-2 px-3" />
+							<input type="text" value={input_company} onChange={(e)=> set_input_company(e.target.value)} name="riceCompany" placeholder=' '  className="peer flex-1 border rounded-3xl p-2 px-3" />
 							<label htmlFor="riceCompany" className='text-lg select-none peer-focus:text-xs peer-focus:-mt-15 peer-[&:not(:placeholder-shown)]:text-xs peer-[&:not(:placeholder-shown)]:-mt-15 absolute ml-4 transition-all pointer-events-none' >Company</label>
 						</div>
-						<select onChange={(e) => setInputCategoryName(e.target.value)} name="category" className='border w-full p-2 px-3 rounded-full text-lg' >
+						<select onChange={(e) => set_input_category_name(e.target.value)} name="category" className='border w-full p-2 px-3 rounded-full text-lg' >
 							<option selected disabled required  className='bg-khaki text-lg' >Select Category</option>
 							{categories.map((category)=> (
 								<option key={category.id} value={category.name} className='bg-khaki text-lg' >{category.name}</option>
 							))}
 						</select>
 						<div className="w-full flex items-center">
-							<input type="text" value={inputPrice} onChange={(e)=> setInputPrice(e.target.value)} required name="price" className="peer flex-1 border rounded-3xl p-2 px-3" />
+							<input type="text" value={input_price} onChange={(e)=> set_input_price(e.target.value)} required name="price" className="peer flex-1 border rounded-3xl p-2 px-3" />
 							<label htmlFor="price"  className='text-lg select-none peer-focus:text-xs peer-valid:text-xs peer-focus:-mt-15 peer-valid:-mt-15 absolute ml-4 transition-all pointer-events-none' >Price</label>
 						</div>
 						<div className="w-full flex items-center">
-							<input type="text" value={inputStock} onChange={(e)=> setInputStock(e.target.value)} required name="stock" className="peer flex-1 border rounded-3xl p-2 px-3" />
+							<input type="text" value={input_stock} onChange={(e)=> set_input_stock(e.target.value)} required name="stock" className="peer flex-1 border rounded-3xl p-2 px-3" />
 							<label htmlFor="stock"  className='text-lg select-none peer-focus:text-xs peer-valid:text-xs peer-focus:-mt-15 peer-valid:-mt-15 absolute ml-4 transition-all pointer-events-none' >Stock</label>
 						</div>
 						<div className='w-full flex items-center' >
-							<input type="checkbox" id='25kg' className='scale-120' />
+							<input type="checkbox" checked={input_kg25} onChange={(e)=> set_input_kg25(e.target.checked)} id='25kg' className='scale-120' />
 							<label htmlFor="25kg" className='text-lg ml-1' >25KG</label>
-							<input type="checkbox" id='50kg' className='scale-120 ml-4' />
+							<input type="checkbox" checked={input_kg50} onChange={(e)=> set_input_kg50(e.target.checked)} id='50kg' className='scale-120 ml-4' />
 							<label htmlFor="50kg" className='ml-1 mr-4 text-lg' >50KG</label>
 							<div className="w-full flex items-center">
-								<input type="text" value={inputWeight} onChange={(e)=> setInputWeight(e.target.value)} name="weight" placeholder=' '  className="peer flex-1 border rounded-3xl p-2 px-3" />
+								<input type="text" value={input_weight} onChange={(e)=> set_input_weight(e.target.value)} name="weight" placeholder=' '  className="peer flex-1 border rounded-3xl p-2 px-3" />
 								<label htmlFor="weight" className='text-lg select-none peer-focus:text-xs peer-focus:-mt-15 peer-[&:not(:placeholder-shown)]:text-xs peer-[&:not(:placeholder-shown)]:-mt-15 absolute ml-4 transition-all pointer-events-none' >Custom weight in KG</label>
 							</div>
 						</div>
@@ -515,55 +538,61 @@ export default function App() {
 			)}
 
 			{/* Delete rice confirmation */}
-			{showDeleteRiceModal && (
-				<main onClick={()=> {setShowDeleteRiceModal(false); setSelectedRice(null)}}  className='absolute top-0 left-0 w-full h-full bg-gray-950/70 flex justify-center items-center text-neutral-900' >
+			{show_delete_rice_modal && (
+				<main onClick={()=> {set_show_delete_rice_modal(false); set_selected_rice(null)}}  className='absolute top-0 left-0 w-full h-full bg-gray-950/70 flex justify-center items-center text-neutral-900' >
 					<section onClick={(e)=> e.stopPropagation()}  className="p-10 gap-10 justify-center relative bg-khaki flex flex-col rounded-2xl items-center shadow-2xl" >
 						<p  className='text-2xl text-sageGreen font-bold' >DELETE RICE</p>
-						<p className='text-6xl text-sageGreen font-semibold' >{selectedRice.name}</p>
-						<p className='text-sageGreen text-3xl -mt-10'>{selectedRice.company}</p>
+						<p className='text-6xl text-sageGreen font-semibold' >{selected_rice.name}</p>
+						<p className='text-sageGreen text-3xl -mt-10'>{selected_rice.company}</p>
 						<div className='w-full flex justify-around items-center'>
-							<button onClick={()=> deleteRice()}  className="p-1 w-1/3 text-lg font-bold rounded-full bg-red-500 text-offwhite" >Delete</button>
-							<button onClick={()=> {setShowDeleteRiceModal(false); setSelectedRice(null)}}  className="p-1 w-1/3 text-lg font-bold rounded-full bg-blue-500 text-offwhite" >Cancel</button>
+							<button onClick={()=> delete_rice()}  className="p-1 w-1/3 text-lg font-bold rounded-full bg-red-500 text-offwhite" >Delete</button>
+							<button onClick={()=> {set_show_delete_rice_modal(false); set_selected_rice(null)}}  className="p-1 w-1/3 text-lg font-bold rounded-full bg-blue-500 text-offwhite" >Cancel</button>
 						</div>
 					</section>
 				</main>
 			)}
 
 			{/* Edit rice form */}
-			{showEditRiceModal && (
-				<main onClick={()=> {setShowEditRiceModal(false); setSelectedRice(null)}}  className='absolute top-0 left-0 w-full h-full bg-neutral-950/70 flex justify-center items-center text-white' >
-					<form onSubmit={(e)=> {editRice(); e.preventDefault()}} onClick={(e)=> e.stopPropagation()}  className="w-2/3 gap-5 p-6 text-neutral-900 bg-khaki grid grid-cols-2 grid-rows-[auto] rounded-2xl shadow-2xl" >
+			{show_edit_rice_modal && (
+				<main onClick={()=> {set_show_edit_rice_modal(false); set_selected_rice(null)}}  className='absolute top-0 left-0 w-full h-full bg-neutral-950/70 flex justify-center items-center text-white' >
+					<form onSubmit={(e)=> {edit_rice(); e.preventDefault()}} onClick={(e)=> e.stopPropagation()}  className="w-2/3 gap-5 p-6 text-neutral-900 bg-khaki grid grid-cols-2 grid-rows-[auto] rounded-2xl shadow-2xl" >
 						<p className='text-2xl text-sageGreen font-bold col-span-2 place-self-center' >EDIT RICE</p>
-						<img src={newImagePreview} alt="Rice Image.png" className='border-2 border-sageGreen rounded-xl row-span-8 w-full h-full' />
+						<img src={new_image_preview} alt="Rice Image.png" className='border-2 border-sageGreen rounded-xl row-span-8 w-full h-full' />
 						<div className='w-full relative flex'>
 							<label htmlFor="riceImage"  className='w-1/3 text-center text-offwhite rounded-full p-2 px-3 cursor-pointer bg-brown hover:scale-103 active:scale-100' >Upload Image</label>
-							<input type="file" id="riceImage" onChange={(e)=> newImageOnChange(e)} accept='image/*'  className='hidden' />
+							<input type="file" id="riceImage" onChange={(e)=> new_image_on_change(e)} accept='image/*'  className='hidden' />
 						</div>
 						<div className="w-full flex items-center">
-							<input type="text" value={newInputRice} onChange={(e)=> setNewInputRice(e.target.value)} required name="riceName" className="peer flex-1 border rounded-3xl p-2 px-3" />
+							<input type="text" value={new_input_rice} onChange={(e)=> set_new_input_rice(e.target.value)} required name="riceName" className="peer flex-1 border rounded-3xl p-2 px-3" />
 							<label htmlFor="riceName"  className='text-lg select-none peer-focus:text-xs peer-valid:text-xs peer-focus:-mt-15 peer-valid:-mt-15 absolute ml-4 transition-all'>Rice Name</label>
 						</div>
 						<div className="w-full flex items-center">
-							<input type="text" value={newInputCompany} onChange={(e)=> setNewInputCompany(e.target.value)} name="riceCompany" placeholder=' '  className="peer flex-1 border rounded-3xl p-2 px-3" />
+							<input type="text" value={new_input_company} onChange={(e)=> set_new_input_company(e.target.value)} name="riceCompany" placeholder=' '  className="peer flex-1 border rounded-3xl p-2 px-3" />
 							<label htmlFor="riceCompany" className='text-lg select-none peer-focus:text-xs peer-focus:-mt-15 peer-[&:not(:placeholder-shown)]:text-xs peer-[&:not(:placeholder-shown)]:-mt-15 absolute ml-4 transition-all' >Company</label>
 						</div>
-						<select value={newInputCategoryName} onChange={(e) => setNewInputCategoryName(e.target.value)} name="category" className='border w-full p-2 px-3 rounded-full text-lg' >
+						<select value={new_input_category_name} onChange={(e) => set_new_input_category_name(e.target.value)} name="category" className='border w-full p-2 px-3 rounded-full text-lg' >
 							<option selected disabled required  className='bg-khaki text-lg' >Select Category</option>
 							{categories.map((category)=> (
 								<option key={category.id} value={category.name} className='bg-khaki text-lg' >{category.name}</option>
 							))}
 						</select>
 						<div className="w-full flex items-center">
-							<input type="text" value={newInputPrice} onChange={(e)=> setNewInputPrice(e.target.value)} required name="price" className="peer flex-1 border rounded-3xl p-2 px-3" />
+							<input type="text" value={new_input_price} onChange={(e)=> set_new_input_price(e.target.value)} required name="price" className="peer flex-1 border rounded-3xl p-2 px-3" />
 							<label htmlFor="price"  className='text-lg select-none peer-focus:text-xs peer-valid:text-xs peer-focus:-mt-15 peer-valid:-mt-15 absolute ml-4 transition-all' >Price</label>
 						</div>
 						<div className="w-full flex items-center">
-							<input type="text" value={newInputStock} onChange={(e)=> setNewInputStock(e.target.value)} required name="stock" className="peer flex-1 border rounded-3xl p-2 px-3" />
+							<input type="text" value={new_input_stock} onChange={(e)=> set_new_input_stock(e.target.value)} required name="stock" className="peer flex-1 border rounded-3xl p-2 px-3" />
 							<label htmlFor="stock"  className='text-lg select-none peer-focus:text-xs peer-valid:text-xs peer-focus:-mt-15 peer-valid:-mt-15 absolute ml-4 transition-all' >Stock</label>
 						</div>
-						<div className="w-full flex items-center">
-							<input type="text" value={newInputWeight} onChange={(e)=> setNewInputWeight(e.target.value)} name="weight" placeholder=' '  className="peer flex-1 border rounded-3xl p-2 px-3" />
-							<label htmlFor="weight" className='text-lg select-none peer-focus:text-xs peer-focus:-mt-15 peer-[&:not(:placeholder-shown)]:text-xs peer-[&:not(:placeholder-shown)]:-mt-15 absolute ml-4 transition-all' >Weight in KG</label>
+						<div className='w-full flex items-center' >
+							<input type="checkbox" checked={new_input_25kg} onChange={(e)=> set_new_input_25kg(e.target.checked)} id='new_25kg' className='scale-120' />
+							<label htmlFor="new_25kg" className='text-lg ml-1' >25KG</label>
+							<input type="checkbox" checked={new_input_50kg} onChange={(e)=> set_new_input_50kg(e.target.checked)} id='new_50kg' className='scale-120 ml-4' />
+							<label htmlFor="new_50kg" className='ml-1 mr-4 text-lg' >50KG</label>
+							<div className="w-full flex items-center">
+								<input type="text" value={new_input_weight} onChange={(e)=> set_new_input_weight(e.target.value)} name="weight" placeholder=' '  className="peer flex-1 border rounded-3xl p-2 px-3" />
+								<label htmlFor="weight" className='text-lg select-none peer-focus:text-xs peer-focus:-mt-15 peer-[&:not(:placeholder-shown)]:text-xs peer-[&:not(:placeholder-shown)]:-mt-15 absolute ml-4 transition-all pointer-events-none' >Weight in KG</label>
+							</div>
 						</div>
 						<input type="submit" className=" p-2 px-3 w-full rounded-full bg-brown text-offwhite font-semibold text-lg" />
 					</form>
@@ -571,38 +600,38 @@ export default function App() {
 			)}
 
 			{/* Add user form */}
-			{showAddUserModal && (
-				<main onClick={()=> setShowAddUserModal(false)}  className='absolute top-0 left-0 w-full h-full bg-neutral-950/70 flex justify-center items-center text-white' >
-					<form onSubmit={(e)=> {addUser(); e.preventDefault()}} onClick={(e)=> e.stopPropagation()}  className="w-2/3 gap-5 p-6 text-neutral-900 bg-khaki grid grid-cols-2 grid-rows-[auto] rounded-2xl shadow-2xl" >
+			{show_add_user_modal && (
+				<main onClick={()=> set_show_add_user_modal(false)}  className='absolute top-0 left-0 w-full h-full bg-neutral-950/70 flex justify-center items-center text-white' >
+					<form onSubmit={(e)=> {add_user(); e.preventDefault()}} onClick={(e)=> e.stopPropagation()}  className="w-2/3 gap-5 p-6 text-neutral-900 bg-khaki grid grid-cols-2 grid-rows-[auto] rounded-2xl shadow-2xl" >
 						<p className='text-2xl text-sageGreen font-bold col-span-2 place-self-center' >ADD USER</p>
 						<div className='border-2 border-sageGreen rounded-full row-span-8 w-full h-full' >
-							{profilePreview ? (
-								<img src={profilePreview} alt="User Image.png" className='w-full h-full rounded-full' />
+							{profile_preview ? (
+								<img src={profile_preview} alt="User Image.png" className='w-full h-full rounded-full' />
 								) : (<p className='flex justify-center items-center w-full h-full text-sageGreen opacity-50 text-4xl' >No image Selected</p>)
 							}
 						</div>
 						<div className='w-full relative flex'>
 							<label htmlFor="userImage"  className='w-1/3 text-center text-offwhite rounded-full p-2 px-3 cursor-pointer bg-brown hover:scale-103 active:scale-100' >Upload Image</label>
-							<input type="file" id="userImage" onChange={(e)=> profileOnChange(e)} accept='image/*'  className='hidden' />
+							<input type="file" id="userImage" onChange={(e)=> profile_on_change(e)} accept='image/*'  className='hidden' />
 						</div>
 						<div className="w-full flex items-center">
-							<input type="text" value={inputUserName} onChange={(e)=> setInputUserName(e.target.value)} required name="userName" className="peer flex-1 border rounded-3xl p-2 px-3" />
-							<label htmlFor="userName"  className='text-lg select-none peer-focus:text-xs peer-valid:text-xs peer-focus:-mt-15 peer-valid:-mt-15 absolute ml-4 transition-all' >Username</label>
+							<input type="text" value={input_username} onChange={(e)=> set_input_username(e.target.value)} required name="username" className="peer flex-1 border rounded-3xl p-2 px-3" />
+							<label htmlFor="username"  className='text-lg select-none peer-focus:text-xs peer-valid:text-xs peer-focus:-mt-15 peer-valid:-mt-15 absolute ml-4 transition-all' >Username</label>
 						</div>
 						<div className="w-full flex items-center">
-							<input type="password" value={inputPassword} onChange={(e)=> setInputPassword(e.target.value)} required name="userPassword"  className="peer flex-1 border rounded-3xl p-2 px-3" />
+							<input type="password" value={input_password} onChange={(e)=> set_input_password(e.target.value)} required name="userPassword"  className="peer flex-1 border rounded-3xl p-2 px-3" />
 							<label htmlFor="userPassword" className='text-lg select-none peer-focus:text-xs peer-focus:-mt-15 peer-valid:text-xs peer-valid:-mt-15 absolute ml-4 transition-all' >Password</label>
 						</div>
 						<div className="w-full flex items-center">
-							<input type="text" value={inputEmail} onChange={(e)=> setInputEmail(e.target.value)} placeholder='' name="email" className="peer flex-1 border rounded-3xl p-2 px-3" />
+							<input type="text" value={input_email} onChange={(e)=> set_input_email(e.target.value)} placeholder='' name="email" className="peer flex-1 border rounded-3xl p-2 px-3" />
 							<label htmlFor="email"  className='text-lg select-none peer-focus:text-xs peer-focus:-mt-15 peer-[:not(:placeholder-shown)]:text-xs peer-[:not(:placeholder-shown)]:-mt-15 absolute ml-4 transition-all' >Email</label>
 						</div>
 						<div className="w-full flex items-center">
-							<input type="text" value={inputAddress} onChange={(e)=> setInputAddress(e.target.value)} placeholder='' name="address" className="peer flex-1 border rounded-3xl p-2 px-3" />
+							<input type="text" value={input_address} onChange={(e)=> set_input_address(e.target.value)} placeholder='' name="address" className="peer flex-1 border rounded-3xl p-2 px-3" />
 							<label htmlFor="address"  className='text-lg select-none peer-focus:text-xs peer-focus:-mt-15 peer-[:not(:placeholder-shown):valid]:text-xs peer-[:not(:placeholder-shown):valid]:-mt-15 absolute ml-4 transition-all' >Address</label>
 						</div>
 						<div className='w-full flex items-center'>
-							<input type="checkbox" checked={inputIsAdmin} onChange={(e)=> setInputIsAdmin(e.target.checked)} id="isAdmin" className='scale-150 ml-1 mr-2 cursor-pointer active:scale-130' />
+							<input type="checkbox" checked={input_is_admin} onChange={(e)=> set_input_is_admin(e.target.checked)} id="isAdmin" className='scale-150 ml-1 mr-2 cursor-pointer active:scale-130' />
 							<label htmlFor="isAdmin" className='text-lg select-none' >Admin</label>
 						</div>
 						<input type="submit" className=" p-2 px-3 w-full cursor-pointer rounded-full bg-brown text-offwhite font-semibold text-lg" />
@@ -611,29 +640,29 @@ export default function App() {
 			)}
 
 			{/* Delete user confirmation */}
-			{showDeleteUserModal && (
-				<main onClick={()=> {setShowDeleteUserModal(false); setSelectedUser(null)}}  className='absolute top-0 left-0 w-full h-full bg-gray-950/70 flex justify-center items-center text-neutral-900' >
+			{show_delete_user_modal && (
+				<main onClick={()=> {set_show_delete_user_modal(false); set_selected_user(null)}}  className='absolute top-0 left-0 w-full h-full bg-gray-950/70 flex justify-center items-center text-neutral-900' >
 					<section onClick={(e)=> e.stopPropagation()}  className="p-10 gap-10 min-w-1/4 justify-center relative bg-khaki flex flex-col rounded-2xl items-center shadow-2xl" >
 						<p  className='text-2xl text-sageGreen font-bold' >DELETE USER</p>
-						<p className='text-6xl text-sageGreen font-semibold' >{selectedUser.userName}</p>
-						<p className='text-3xl text-sageGreen -mt-10' >{selectedUser.isAdmin === true ? 'Admin' : 'Customer'}</p>
+						<p className='text-6xl text-sageGreen font-semibold' >{selected_user.username}</p>
+						<p className='text-3xl text-sageGreen -mt-10' >{selected_user.is_admin === true ? 'Admin' : 'Customer'}</p>
 						<div className='w-full flex justify-around items-center'>
-							<button onClick={()=> deleteUser()}  className="p-1 w-1/3 text-lg font-bold rounded-3xl bg-red-500 text-offwhite" >Delete</button>
-							<button onClick={()=> setShowDeleteUserModal(false)}  className="p-1 w-1/3 text-lg font-bold rounded-3xl bg-blue-500 text-offwhite" >Cancel</button>
+							<button onClick={()=> delete_user()}  className="p-1 w-1/3 text-lg font-bold rounded-3xl bg-red-500 text-offwhite" >Delete</button>
+							<button onClick={()=> set_show_delete_user_modal(false)}  className="p-1 w-1/3 text-lg font-bold rounded-3xl bg-blue-500 text-offwhite" >Cancel</button>
 						</div>
 					</section>
 				</main>
 			)}
 
 			{/* Edit user form */}
-			{showEditUserModal && (
-				<main onClick={()=> {setShowEditUserModal(false); setSelectedUser(null)}}  className='absolute top-0 left-0 w-full h-full bg-neutral-950/70 flex justify-center items-center text-white' >
+			{show_edit_user_modal && (
+				<main onClick={()=> {set_show_edit_user_modal(false); set_selected_user(null)}}  className='absolute top-0 left-0 w-full h-full bg-neutral-950/70 flex justify-center items-center text-white' >
 					<form onSubmit={(e)=> {editUser(); e.preventDefault()}} onClick={(e)=> e.stopPropagation()}  className="w-2/3 gap-5 p-6 text-neutral-900 bg-khaki grid grid-cols-2 grid-rows-[auto] rounded-2xl shadow-2xl" >
 						<p className='text-2xl text-sageGreen font-bold col-span-2 place-self-center' >EDIT USER</p>
 						<div className='border-2 border-sageGreen rounded-full row-span-8 w-full h-full relative select-none' >
-							{newProfilePreview ? (
+							{new_profile_preview ? (
 								<>
-								<img src={newProfilePreview} alt="User Image.png" className='w-full h-full rounded-full' />
+								<img src={new_profile_preview} alt="User Image.png" className='w-full h-full rounded-full' />
 								<FontAwesomeIcon icon={faCircleXmark} className='text-3xl  text-sageGreen top-[7%] absolute right-[7%] cursor-pointer active:scale-90' />
 								</>
 								) : (<p className='flex justify-center items-center w-full h-full text-sageGreen opacity-50 text-4xl' >No image uploaded</p>)
@@ -641,26 +670,26 @@ export default function App() {
 						</div>
 						<div className='w-full relative flex'>
 							<label htmlFor="userImage"  className='w-1/3 text-center text-offwhite rounded-full p-2 px-3 cursor-pointer bg-brown hover:scale-103 active:scale-100' >Upload Image</label>
-							<input type="file" id="userImage" onChange={(e)=> newProfileOnChange(e)} accept='image/*'  className='hidden' />
+							<input type="file" id="userImage" onChange={(e)=> new_profile_on_change(e)} accept='image/*'  className='hidden' />
 						</div>
 						<div className="w-full flex items-center">
-							<input type="text" value={newInputUserName} onChange={(e)=> setNewInputUserName(e.target.value)} required name="userName" className="peer flex-1 border rounded-3xl p-2 px-3" />
-							<label htmlFor="userName"  className='text-lg select-none peer-focus:text-xs peer-valid:text-xs peer-focus:-mt-15 peer-valid:-mt-15 absolute ml-4 transition-all pointer-events-none' >Username</label>
+							<input type="text" value={new_input_username} onChange={(e)=> set_new_input_username(e.target.value)} required name="username" className="peer flex-1 border rounded-3xl p-2 px-3" />
+							<label htmlFor="username"  className='text-lg select-none peer-focus:text-xs peer-valid:text-xs peer-focus:-mt-15 peer-valid:-mt-15 absolute ml-4 transition-all pointer-events-none' >Username</label>
 						</div>
 						<div className="w-full flex items-center">
-							<input type="password" value={newInputPassword} onChange={(e)=> setNewInputPassword(e.target.value)} required name="userPassword"  className="peer flex-1 border rounded-3xl p-2 px-3" />
+							<input type="password" value={new_input_password} onChange={(e)=> set_new_input_password(e.target.value)} required name="userPassword"  className="peer flex-1 border rounded-3xl p-2 px-3" />
 							<label htmlFor="userPassword" className='text-lg select-none peer-focus:text-xs peer-focus:-mt-15 peer-valid:text-xs peer-valid:-mt-15 absolute ml-4 transition-all pointer-events-none' >Password</label>
 						</div>
 						<div className="w-full flex items-center">
-							<input type="text" value={newInputEmail} onChange={(e)=> setNewInputEmail(e.target.value)} placeholder='' name="email" className="peer flex-1 border rounded-3xl p-2 px-3" />
+							<input type="text" value={new_input_email} onChange={(e)=> set_new_input_email(e.target.value)} placeholder='' name="email" className="peer flex-1 border rounded-3xl p-2 px-3" />
 							<label htmlFor="email"  className='text-lg select-none peer-focus:text-xs peer-focus:-mt-15 peer-[:not(:placeholder-shown)]:text-xs peer-[:not(:placeholder-shown)]:-mt-15 absolute ml-4 transition-all pointer-events-none' >Email</label>
 						</div>
 						<div className="w-full flex items-center">
-							<input type="text" value={newInputAddress} onChange={(e)=> setNewInputAddress(e.target.value)} placeholder='' name="address" className="peer flex-1 border rounded-3xl p-2 px-3" />
+							<input type="text" value={new_input_address} onChange={(e)=> set_new_input_address(e.target.value)} placeholder='' name="address" className="peer flex-1 border rounded-3xl p-2 px-3" />
 							<label htmlFor="address"  className='text-lg select-none peer-focus:text-xs peer-focus:-mt-15 peer-[:not(:placeholder-shown):valid]:text-xs peer-[:not(:placeholder-shown):valid]:-mt-15 absolute ml-4 transition-all pointer-events-none' >Address</label>
 						</div>
 						<div className='w-full flex items-center'>
-							<input type="checkbox" checked={newInputIsAdmin} onChange={(e)=> setNewInputIsAdmin(e.target.checked)} id="isAdmin" className='scale-150 ml-1 mr-2 cursor-pointer active:scale-130' />
+							<input type="checkbox" checked={new_input_is_admin} onChange={(e)=> set_new_input_is_admin(e.target.checked)} id="isAdmin" className='scale-150 ml-1 mr-2 cursor-pointer active:scale-130' />
 							<label htmlFor="isAdmin" className='text-lg select-none' >Admin</label>
 						</div>
 						<input type="submit" className=" p-2 px-3 w-full cursor-pointer rounded-full bg-brown text-offwhite font-semibold text-lg" />
@@ -669,13 +698,13 @@ export default function App() {
 			)}
 
 			{/* Logout confirmation */}
-			{showLogoutModal && (
-				<main onClick={()=> setShowLogoutModal(false)}  className='absolute top-0 left-0 w-full h-full bg-gray-950/70 flex justify-center items-center' >
+			{show_logout_modal && (
+				<main onClick={()=> set_show_logout_modal(false)}  className='absolute top-0 left-0 w-full h-full bg-gray-950/70 flex justify-center items-center' >
 					<section onClick={(e)=> e.stopPropagation()}  className="w-1/2 p-6 gap-4 justify-center bg-khaki flex flex-col items-center rounded-2xl" >
 						<p className='text-2xl text-sageGreen' >LOG OUT</p>
 						<div className="w-full flex justify-around items-center" >
 							<button onClick={()=> logout()}  className="p-1 w-1/4 text-lg font-semibold bg-red-500 text-offwhite rounded-full" >Logout</button>
-							<button onClick={()=> setShowLogoutModal(false)}  className=" p-1 w-1/4 text-lg bg-sageGreen text-offwhite font-semibold rounded-full" >Cancel</button>
+							<button onClick={()=> set_show_logout_modal(false)}  className=" p-1 w-1/4 text-lg bg-sageGreen text-offwhite font-semibold rounded-full" >Cancel</button>
 						</div>
 					</section>
 				</main>

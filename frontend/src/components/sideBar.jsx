@@ -5,12 +5,13 @@ import { faBars, faCartShopping, faUser } from '@fortawesome/free-solid-svg-icon
 import { apiGet } from './api'
 import Logo from '../assets/harvestia.png'
 
-export default function sideBar({setShowCategory, categories}) {
+export default function sideBar({set_show_category, categories}) {
 	// Verify if current user is admin
-	const [isAdmin, setIsAdmin] = useState(false)
+	const [is_admin, set_is_admin] = useState(false)
 	useEffect(()=> {
 		apiGet('/verifyAdmin').then((data)=> {
-		setIsAdmin(data.isAdmin)
+		console.log("Admin status:", data.is_admin)
+		set_is_admin(data.is_admin)
 		})
 	}, [])
 
@@ -22,16 +23,16 @@ export default function sideBar({setShowCategory, categories}) {
 					<FontAwesomeIcon icon={faCartShopping} className='text-xl lg:text-3xl cursor-pointer mr-2 text-sageGreen hover:scale-110 active:scale-95' />
 					<Link to={'/profile'}><FontAwesomeIcon icon={faUser} className=' text-xl lg:text-3xl cursor-pointer hover:scale-110 text-sageGreen active:scale-95' /></Link>
 				</div>
-				<Link to={'/home'} onClick={()=> setShowCategory(0)} ><img src={Logo} alt="Harvestia Logo" className=' hover:scale-105 w-9/10 place-self-center' /></Link>
+				<Link to={'/home'} onClick={()=> set_show_category(0)} ><img src={Logo} alt="Harvestia Logo" className=' hover:scale-105 w-9/10 place-self-center' /></Link>
 			</section><br />
 
 			<section className=' w-full indent-5 ' >
 				{/* Show Admin tab if user is admin */}
-				{isAdmin && (<Link to={'/admin'}><p  className=' text-sageGreen p-2 text-lg lg:text-xl font-normal hover:bg-neutral-400/20 active:bg-neutral-700/30' >Admin</p></Link>)}
+				{is_admin && (<Link to={'/admin'}><p  className=' text-sageGreen p-2 text-lg lg:text-xl font-normal hover:bg-neutral-400/20 active:bg-neutral-700/30' >Admin</p></Link>)}
 
 				{/* Display all categories */}
 				{categories.map((category) => (
-					<Link to={'/home'} key={category.id} onClick={()=> setShowCategory(category.id)} >
+					<Link to={'/home'} key={category.id} onClick={()=> set_show_category(category.id)} >
 						<p  className="p-2 text-lg hover:bg-neutral-400/20 cursor-pointer text-sageGreen active:bg-neutral-700/30" >{category.name}</p>
 					</Link>
 				))}

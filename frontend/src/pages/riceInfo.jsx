@@ -2,19 +2,19 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
 import { faArrowLeft, faCartArrowDown, faStar, faUser } from "@fortawesome/free-solid-svg-icons"
 
 
-export default function riceInfo({selectedRice}) {
+export default function riceInfo({selected_rice}) {
    return (
       <main className="h-full relative p-4 box-border" >
          <section className="h-fit bg-khaki rounded-2xl flex flex-col p-4 gap-4 relative" >
             <FontAwesomeIcon icon={faArrowLeft} className="text-4xl text-sageGreen" />
             {/* Details */}
             <div className="flex">
-               <div className="w-1/3 h-full rounded-lg" ><img src={selectedRice.imagePath} alt='No image available' className="h-full w-full object-cover rounded-lg" /></div>
+               <div className="w-1/3 h-full rounded-lg" ><img src={selected_rice.image_path} alt='No image available' className="h-full w-full object-cover rounded-lg" /></div>
                <div className="w-2/3 h-full flex flex-col gap-3 relative" >
-                  <p className="text-5xl font-bold">{selectedRice.name}</p>
-                  <p className="text-2xl">{selectedRice.company}</p><br />
-                  <p className="text-4xl font-semibold">{selectedRice.weightKG} KG</p>
-                  <p className="text-4xl text-sageGreen font-semibold">₱{selectedRice.price}</p><br />
+                  <p className="text-5xl font-bold">{selected_rice.name}</p>
+                  <p className="text-2xl">{selected_rice.company}</p><br />
+                  <p className="text-4xl font-semibold">{selected_rice.weight_kg} KG</p>
+                  <p className="text-4xl text-sageGreen font-semibold">₱{selected_rice.price}</p><br />
                   <p className="text-2xl" ><FontAwesomeIcon icon={faStar} className="text-yellow-500"/> 3.5</p>
                   <p className="text-2xl opacity-80" >2421 Sold</p>
                   <div className=" flex justify-end absolute bottom-0 right-0" >
