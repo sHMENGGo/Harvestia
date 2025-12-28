@@ -171,7 +171,10 @@ app.put('/api/editCategory', verify_token, verify_admin, async (req, res)=> {
 // Get Rices from database
 app.get('/api/getRices', verify_token, async (req, res)=>{
   	try {
-    	const rices = await prisma.Rice.findMany({orderBy: {id: 'asc'}, include: {category: true}})
+    	const rices = await prisma.Rice.findMany({
+			orderBy: {id: 'asc'}, 
+			include: {category: true, reviews: true}
+		})
     	res.status(200).json({ rices })
   	} catch(err) {
     	console.error('Prisma error:', err)

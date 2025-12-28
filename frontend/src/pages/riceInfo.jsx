@@ -1,12 +1,14 @@
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
 import { faArrowLeft, faCartArrowDown, faStar, faUser } from "@fortawesome/free-solid-svg-icons"
-
+import { useNavigate } from "react-router-dom"
 
 export default function riceInfo({selected_rice}) {
+   const navigate = useNavigate()
+
    return (
       <main className="h-full relative p-4 box-border" >
          <section className="h-fit bg-khaki rounded-2xl flex flex-col p-4 gap-4 relative" >
-            <FontAwesomeIcon icon={faArrowLeft} className="text-4xl text-sageGreen" />
+            <FontAwesomeIcon icon={faArrowLeft} className="text-4xl text-sageGreen cursor-pointer hover:scale-103 active:scale-100" onClick={()=> navigate('/home')} />
             {/* Details */}
             <div className="flex">
                <div className="w-1/3 h-full rounded-lg" ><img src={selected_rice.image_path} alt='No image available' className="h-full w-full object-cover rounded-lg" /></div>

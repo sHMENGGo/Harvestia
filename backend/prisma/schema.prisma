@@ -9,7 +9,8 @@ datasource db {
 model Category {
   id   Int    @id @default(autoincrement())
   name String @unique @db.VarChar(100)
-  rice Rice[]
+  created_at DateTime @default(now())
+  rices Rice[]
 }
 
 model Rice {
@@ -19,6 +20,7 @@ model Rice {
   price           Float
   stock           Int       @default(0)
   rating          Decimal?  @db.Decimal(2, 1)
+  description     String?
   category_id     Int?
   image_path      String?
   image_public_id String?
@@ -26,7 +28,20 @@ model Rice {
   is_50kg         Boolean   @default(false)
   is_available    Boolean   @default(true)
   weight_kg       Float?
+  created_at      DateTime  @default(now())
   category        Category? @relation(fields: [category_id], references: [id])
+  reviews          Review[]
+}
+
+model Review {
+  id        Int     @id @default(autoincrement())
+  user_id   Int
+  rice_id   Int
+  rating    Int
+  comment   String?
+  created_at DateTime @default(now())
+  user      User    @relation(fields: [user_id], references: [id])
+  rice      Rice    @relation(fields: [rice_id], references: [id])
 }
 
 model User {
@@ -38,4 +53,6 @@ model User {
   address         String?
   image_path      String?
   image_public_id String?
+  created_at      DateTime @default(now())
+  reviews         Review[]
 }
