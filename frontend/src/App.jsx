@@ -213,6 +213,7 @@ export default function App() {
 	const [new_input_25kg, set_new_input_25kg] = useState(false)
 	const [new_input_50kg, set_new_input_50kg] = useState(false)
 	const [new_input_weight, set_new_input_weight] = useState('')
+	const [new_input_description, set_new_input_description] = useState('')
 	const [new_image_preview, set_new_image_preview] = useState(null)
 	const [new_image_file, set_new_image_file] = useState(null)
 	useEffect(()=> {
@@ -227,6 +228,7 @@ export default function App() {
 		set_new_input_25kg(selected_rice.is_25kg || false)
 		set_new_input_50kg(selected_rice.is_50kg || false)
 		set_new_input_weight(selected_rice.weight_kg || '')
+		set_new_input_description(selected_rice.description || '')
 		set_new_image_preview(selected_rice.image_path || '')
 	}, [selected_rice])
 	// Change new image file when uploaded image changed
@@ -254,6 +256,7 @@ export default function App() {
 		formData.append('new_input_25kg', new_input_25kg || false)
 		formData.append('new_input_50kg', new_input_50kg || false)
 		formData.append('new_input_weight', new_input_weight || '')
+		formData.append('new_input_description', new_input_description || '')
 		formData.append('old_image_id', selected_rice.image_public_id || null)
 		formData.append('rice_id', selected_rice.id || null)
 		formData.append('new_image_file', new_image_file || null)
@@ -269,6 +272,7 @@ export default function App() {
 			set_new_input_25kg(false)
 			set_new_input_50kg(false)
 			set_new_input_weight('')
+			set_new_input_description('')
 			set_new_image_file(null)
 			set_selected_rice(null)
 			URL.revokeObjectURL(new_image_preview)
@@ -571,46 +575,60 @@ export default function App() {
 			{/* Edit rice form */}
 			{show_edit_rice_modal && (
 				<main onClick={()=> {set_show_edit_rice_modal(false); set_selected_rice(null)}}  className='absolute top-0 left-0 w-full h-full bg-neutral-950/70 flex justify-center items-center text-white' >
-					<form onSubmit={(e)=> {edit_rice(); e.preventDefault()}} onClick={(e)=> e.stopPropagation()}  className="w-2/3 gap-5 p-6 text-neutral-900 bg-khaki grid grid-cols-2 grid-rows-[auto] rounded-2xl shadow-2xl" >
-						<p className='text-2xl text-sageGreen font-bold col-span-2 place-self-center' >EDIT RICE</p>
-						<img src={new_image_preview} alt="Rice Image.png" className='border-2 border-sageGreen rounded-xl row-span-8 w-full h-full' />
-						<div className='w-full relative flex'>
-							<label htmlFor="riceImage"  className='w-1/3 text-center text-offwhite rounded-full p-2 px-3 cursor-pointer bg-brown hover:scale-103 active:scale-100' >Upload Image</label>
-							<input type="file" id="riceImage" onChange={(e)=> new_image_on_change(e)} accept='image/*'  className='hidden' />
-						</div>
-						<div className="w-full flex items-center">
-							<input type="text" value={new_input_rice} onChange={(e)=> set_new_input_rice(e.target.value)} required name="riceName" className="peer flex-1 border rounded-3xl p-2 px-3" />
-							<label htmlFor="riceName"  className='text-lg select-none peer-focus:text-xs peer-valid:text-xs peer-focus:-mt-15 peer-valid:-mt-15 absolute ml-4 transition-all'>Rice Name</label>
-						</div>
-						<div className="w-full flex items-center">
-							<input type="text" value={new_input_company} onChange={(e)=> set_new_input_company(e.target.value)} name="riceCompany" placeholder=' '  className="peer flex-1 border rounded-3xl p-2 px-3" />
-							<label htmlFor="riceCompany" className='text-lg select-none peer-focus:text-xs peer-focus:-mt-15 peer-[&:not(:placeholder-shown)]:text-xs peer-[&:not(:placeholder-shown)]:-mt-15 absolute ml-4 transition-all' >Company</label>
-						</div>
-						<select value={new_input_category_name} onChange={(e) => set_new_input_category_name(e.target.value)} name="category" className='border w-full p-2 px-3 rounded-full text-lg' >
-							<option selected disabled required  className='bg-khaki text-lg' >Select Category</option>
-							{categories.map((category)=> (
-								<option key={category.id} value={category.name} className='bg-khaki text-lg' >{category.name}</option>
-							))}
-						</select>
-						<div className="w-full flex items-center">
-							<input type="text" value={new_input_price} onChange={(e)=> set_new_input_price(e.target.value)} required name="price" className="peer flex-1 border rounded-3xl p-2 px-3" />
-							<label htmlFor="price"  className='text-lg select-none peer-focus:text-xs peer-valid:text-xs peer-focus:-mt-15 peer-valid:-mt-15 absolute ml-4 transition-all' >Price</label>
-						</div>
-						<div className="w-full flex items-center">
-							<input type="text" value={new_input_stock} onChange={(e)=> set_new_input_stock(e.target.value)} required name="stock" className="peer flex-1 border rounded-3xl p-2 px-3" />
-							<label htmlFor="stock"  className='text-lg select-none peer-focus:text-xs peer-valid:text-xs peer-focus:-mt-15 peer-valid:-mt-15 absolute ml-4 transition-all' >Stock</label>
-						</div>
-						<div className='w-full flex items-center' >
-							<input type="checkbox" checked={new_input_25kg} onChange={(e)=> set_new_input_25kg(e.target.checked)} id='new_25kg' className='scale-120' />
-							<label htmlFor="new_25kg" className='text-lg ml-1' >25KG</label>
-							<input type="checkbox" checked={new_input_50kg} onChange={(e)=> set_new_input_50kg(e.target.checked)} id='new_50kg' className='scale-120 ml-4' />
-							<label htmlFor="new_50kg" className='ml-1 mr-4 text-lg' >50KG</label>
-							<div className="w-full flex items-center">
-								<input type="text" value={new_input_weight} onChange={(e)=> set_new_input_weight(e.target.value)} name="weight" placeholder=' '  className="peer flex-1 border rounded-3xl p-2 px-3" />
-								<label htmlFor="weight" className='text-lg select-none peer-focus:text-xs peer-focus:-mt-15 peer-[&:not(:placeholder-shown)]:text-xs peer-[&:not(:placeholder-shown)]:-mt-15 absolute ml-4 transition-all pointer-events-none' >Weight in KG</label>
+					<form onSubmit={(e)=> {edit_rice(); e.preventDefault()}} onClick={(e)=> e.stopPropagation()}  className="w-2/3 gap-5 p-6 text-neutral-900 bg-khaki flex flex-col justify-center rounded-2xl shadow-2xl" >
+						<p className='text-2xl text-sageGreen font-bold place-self-center' >EDIT RICE</p>
+						<section className='w-full flex relative gap-4'>
+							<div className='w-full relative flex flex-col gap-4 justify-center'>
+								<div className='border-2 border-sageGreen rounded-xl w-full h-full' >
+									{new_image_preview ? (
+										<img src={new_image_preview} alt="Rice Image.png" className='w-full h-full rounded-xl' />
+									) : (<p className='flex justify-center items-center w-full h-full text-sageGreen opacity-50 text-4xl' >No Image Selected</p>)}
+								</div>
+								<div className='relative flex place-self-center '>
+									<label htmlFor="riceImage"  className='text-center text-offwhite rounded-full p-2 px-3 cursor-pointer bg-brown hover:scale-103 active:scale-100' >Upload Image</label>
+									<input type="file" id="riceImage" onChange={(e)=> new_image_on_change(e)} accept='image/*'  className='hidden' />
+								</div>
 							</div>
-						</div>
-						<input type="submit" className=" p-2 px-3 w-full rounded-full bg-brown text-offwhite font-semibold text-lg" />
+							<div className='w-full flex flex-col gap-5 overflow-auto h-100 no-scrollbar'>
+								<div className="w-full flex items-center relative">
+									<input type="text" value={new_input_rice} onChange={(e)=> set_new_input_rice(e.target.value)} required name="riceName" className="peer flex-1 border rounded-3xl p-2 px-3" />
+									<label htmlFor="riceName"  className='text-lg select-none peer-focus:text-xs peer-valid:text-xs peer-focus:-mt-15 peer-valid:-mt-15 absolute ml-4 transition-all pointer-events-none'>Rice Name *</label>
+								</div>
+								<div className="w-full flex items-center relative">
+									<input type="text" value={new_input_company} onChange={(e)=> set_new_input_company(e.target.value)} name="riceCompany" placeholder=' '  className="peer flex-1 border rounded-3xl p-2 px-3" />
+									<label htmlFor="riceCompany" className='text-lg select-none peer-focus:text-xs peer-focus:-mt-15 peer-[&:not(:placeholder-shown)]:text-xs peer-[&:not(:placeholder-shown)]:-mt-15 absolute ml-4 transition-all pointer-events-none' >Company</label>
+								</div>
+								<select value={new_input_category_name} onChange={(e) => set_new_input_category_name(e.target.value)} name="category" className='border w-full p-2 px-3 rounded-full text-lg' >
+									<option selected disabled required  className='bg-khaki text-lg' >Select Category *</option>
+									{categories.map((category)=> (
+										<option key={category.id} value={category.name} className='bg-khaki text-lg' >{category.name}</option>
+									))}
+								</select>
+								<div className="w-full flex items-center relative">
+									<input type="text" value={new_input_price} onChange={(e)=> set_new_input_price(e.target.value)} required name="price" className="peer flex-1 border rounded-3xl p-2 px-3" />
+									<label htmlFor="price"  className='text-lg select-none peer-focus:text-xs peer-valid:text-xs peer-focus:-mt-15 peer-valid:-mt-15 absolute ml-4 transition-all pointer-events-none' >Price *</label>
+								</div>
+								<div className="w-full flex items-center relative">
+									<input type="text" value={new_input_stock} onChange={(e)=> set_new_input_stock(e.target.value)} required name="stock" className="peer flex-1 border rounded-3xl p-2 px-3" />
+									<label htmlFor="stock"  className='text-lg select-none peer-focus:text-xs peer-valid:text-xs peer-focus:-mt-15 peer-valid:-mt-15 absolute ml-4 transition-all pointer-events-none' >Stock *</label>
+								</div>
+								<div className='w-full flex items-center' >
+									<input type="checkbox" checked={new_input_25kg} onChange={(e)=> set_new_input_25kg(e.target.checked)} id='new_25kg' className='scale-120 ml-1' />
+									<label htmlFor="new_25kg" className='text-lg ml-1' >25KG</label>
+									<input type="checkbox" checked={new_input_50kg} onChange={(e)=> set_new_input_50kg(e.target.checked)} id='new_50kg' className='scale-120 ml-4' />
+									<label htmlFor="new_50kg" className='ml-1 mr-4 text-lg' >50KG</label>
+									<div className="w-full flex items-center relative">
+										<input type="text" value={new_input_weight} onChange={(e)=> set_new_input_weight(e.target.value)} name="weight" placeholder=' '  className="peer flex-1 border rounded-3xl p-2 px-3" />
+										<label htmlFor="weight" className='text-lg select-none peer-focus:text-xs peer-focus:-mt-15 peer-[&:not(:placeholder-shown)]:text-xs peer-[&:not(:placeholder-shown)]:-mt-15 absolute ml-4 transition-all pointer-events-none' >Custom weight in KG</label>
+									</div>
+								</div>
+								<div className="w-full flex items-center relative">
+									<textarea value={new_input_description} onChange={(e)=> set_new_input_description(e.target.value)} placeholder='' id="description" className="peer flex-1 border rounded-lg p-2 h-55" />
+									<label htmlFor="description"  className='text-lg select-none peer-[&:not(:placeholder-shown)]:text-xs peer-[&:not(:placeholder-shown)]:-mt-13 peer-focus:text-xs peer-focus:-mt-13 absolute ml-2 mb-46 transition-all pointer-events-none' >Description</label>
+								</div>
+								<input type="submit" className=" p-2 px-3 w-full rounded-full bg-brown text-offwhite font-semibold text-lg" />
+							</div>
+						</section>
 					</form>
 				</main>
 			)}

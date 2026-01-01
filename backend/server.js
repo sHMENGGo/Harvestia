@@ -184,7 +184,7 @@ app.get('/api/getRices', verify_token, async (req, res)=>{
 
 // Add rice to database
 app.post('/api/addRice', verify_token, verify_admin, uploadRiceImage.single('image_file'), async (req, res)=> {
-  	const {input_rice, input_company, input_category_id, input_price, input_stock, input_25kg, input_50kg, input_weight} = req.body
+  	const {input_rice, input_company, input_category_id, input_price, input_stock, input_25kg, input_50kg, input_weight, input_description} = req.body
   	try {
     	if (!req.file) {return res.status(400).json({message: 'No image upload'})}
     	await prisma.Rice.create({data: {
@@ -196,6 +196,7 @@ app.post('/api/addRice', verify_token, verify_admin, uploadRiceImage.single('ima
 			is_25kg: Boolean(input_25kg),
 			is_50kg: Boolean(input_50kg),
       	weight_kg: parseFloat(input_weight),
+		 	description: input_description,
       	image_path: req.file.path,
       	image_public_id: req.file.filename
     	}})
@@ -221,7 +222,7 @@ app.delete('/api/deleteRice', verify_token, verify_admin, async (req, res)=> {
 
 // Edit rice in database
 app.put('/api/editRice', verify_token, verify_admin, uploadRiceImage.single('new_image_file'), async (req, res)=> {
-  	const {new_input_rice, new_input_company, selected_category_id, new_input_price, new_input_stock, new_input_25kg, new_input_50kg, new_input_weight, old_image_id, rice_id} = req.body
+  	const {new_input_rice, new_input_company, selected_category_id, new_input_price, new_input_stock, new_input_25kg, new_input_50kg, new_input_weight, new_input_description, old_image_id, rice_id} = req.body
 	try {
 		const update_data = {
 			name: new_input_rice,
@@ -231,7 +232,8 @@ app.put('/api/editRice', verify_token, verify_admin, uploadRiceImage.single('new
 			stock: parseInt(new_input_stock),
 			is_25kg: new_input_25kg == 'true' ? true : false,
 			is_50kg: new_input_50kg == 'true' ? true : false,
-			weight_kg: parseFloat(new_input_weight)
+			weight_kg: parseFloat(new_input_weight),
+			description: new_input_description
 		}
 		if (req.file && req.file.path) {
 			await cloudinary.uploader.destroy(old_image_id || '')

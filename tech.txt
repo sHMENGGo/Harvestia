@@ -1,0 +1,134 @@
+# Harvestia E-Commerce System Tech Stack
+
+## Overview
+Harvestia is a full-stack e-commerce platform for selling rice varieties, built with modern web technologies. The system features user authentication, product management, shopping cart, and admin dashboard functionalities.
+
+## Frontend Technologies
+
+### React
+- **Usage**: Core UI library for building the user interface
+- **Role**: Manages component state, handles user interactions, and renders the dynamic web pages
+- **Key Features Used**: Hooks (useState, useEffect), JSX for templating, component composition
+
+### Vite
+- **Usage**: Build tool and development server for the React application
+- **Role**: Provides fast hot module replacement during development and optimized production builds
+- **Benefits**: Faster development experience compared to Create React App
+
+### Tailwind CSS
+- **Usage**: Utility-first CSS framework for styling
+- **Role**: Provides responsive design classes, custom color scheme (khaki, sageGreen, brown), and consistent UI components
+- **Custom Configuration**: Custom color palette defined for the agricultural theme
+
+### FontAwesome
+- **Usage**: Icon library for UI elements
+- **Role**: Provides edit, trash, user, and other icons throughout the admin interface and navigation
+
+### React Router DOM
+- **Usage**: Client-side routing for single-page application
+- **Role**: Handles navigation between pages (Home, Admin, Profile, Login, etc.) without full page reloads
+
+### Axios
+- **Usage**: HTTP client for API communication
+- **Role**: Makes requests to the backend API for data fetching, user authentication, and CRUD operations
+
+### React Hot Toast
+- **Usage**: Notification system for user feedback
+- **Role**: Displays success/error messages for login, registration, and form submissions
+
+### Browser Image Compression
+- **Usage**: Client-side image compression before upload
+- **Role**: Reduces image file sizes for rice product photos before sending to the server
+
+### JWT Decode
+- **Usage**: Decode JSON Web Tokens on the client side
+- **Role**: Extract user information from JWT tokens stored in local storage
+
+## Backend Technologies
+
+### Node.js
+- **Usage**: JavaScript runtime environment
+- **Role**: Executes the server-side JavaScript code and handles server operations
+
+### Express.js
+- **Usage**: Web application framework
+- **Role**: Provides routing, middleware support, and HTTP request handling for the REST API
+
+### Prisma
+- **Usage**: Next-generation ORM for database management
+- **Role**: Handles database schema definition, migrations, and type-safe database queries
+- **Features Used**: Schema modeling, data relationships, automatic migrations
+
+### PostgreSQL
+- **Usage**: Relational database management system
+- **Role**: Stores all application data including users, rice products, categories, and reviews
+
+### Cookie Parser
+- **Usage**: Middleware for parsing HTTP cookies
+- **Role**: Handles authentication cookies and session management
+
+### CORS
+- **Usage**: Middleware for enabling Cross-Origin Resource Sharing
+- **Role**: Allows the frontend (running on different port) to communicate with the backend API
+
+### JSON Web Token (JWT)
+- **Usage**: Token-based authentication system
+- **Role**: Generates and verifies authentication tokens for secure user sessions
+
+### Multer
+- **Usage**: Middleware for handling multipart/form-data (file uploads)
+- **Role**: Processes image uploads for rice products and user profiles
+
+### Multer Storage Cloudinary
+- **Usage**: Cloud storage integration for file uploads
+- **Role**: Stores uploaded images on Cloudinary CDN for optimized delivery and storage
+
+### Dotenv
+- **Usage**: Environment variable management
+- **Role**: Loads configuration variables (database URLs, API keys, secrets) from .env files
+
+### PG (node-postgres)
+- **Usage**: PostgreSQL client for Node.js
+- **Role**: Low-level database connectivity for Prisma operations
+
+## Development Tools
+
+### ESLint
+- **Usage**: JavaScript/TypeScript linting tool
+- **Role**: Enforces code quality standards and catches potential errors
+
+### TypeScript
+- **Usage**: Superset of JavaScript with static typing
+- **Role**: Provides type safety for better code reliability and developer experience
+
+### Nodemon
+- **Usage**: Automatic server restart during development
+- **Role**: Monitors file changes and restarts the Node.js server automatically
+
+### TSX
+- **Usage**: TypeScript execution environment
+- **Role**: Runs TypeScript files directly without compilation step
+
+### PostCSS & Autoprefixer
+- **Usage**: CSS processing tools
+- **Role**: Processes Tailwind CSS and adds vendor prefixes for cross-browser compatibility
+
+## Architecture
+
+The application follows a client-server architecture:
+- **Frontend**: React SPA served by Vite, handles UI and user interactions
+- **Backend**: Express.js API server, handles business logic and data persistence
+- **Database**: PostgreSQL with Prisma ORM for type-safe data operations
+- **Storage**: Cloudinary for image hosting and delivery
+
+## Key Features Implemented
+
+- User authentication and authorization
+- Product catalog with image uploads
+- Shopping cart and checkout system
+- Admin dashboard for inventory management
+- Responsive design for mobile and desktop
+- Real-time notifications and form validation
+- Secure file upload and storage
+- Database migrations and schema management
+

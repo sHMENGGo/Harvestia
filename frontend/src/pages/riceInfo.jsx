@@ -28,7 +28,7 @@ export default function riceInfo({selected_rice}) {
             {/* Description */}
             <div className="flex flex-col text-neutral-800">
                <h1 className="text-lg font-semibold">Description</h1>
-               <p className="inset-shadow-neutral-700 inset-shadow-[0_0_3px] rounded-xl p-2" >Lorem ipsum, dolor sit amet consectetur adipisicing elit. Est architecto, inventore molestiae ducimus earum illum perspiciatis veniam harum eligendi sapiente fugit esse, aperiam numquam perferendis ipsum sequi similique distinctio unde.</p>
+               {selected_rice.description ? (<p className="inset-shadow-neutral-700 inset-shadow-[0_0_3px] rounded-xl p-2" >{selected_rice.description}</p>) : (<p className="inset-shadow-neutral-700 inset-shadow-[0_0_3px] rounded-xl p-2 text-center text-neutral-500" >No description</p>)}
             </div>
             {/* Reviews */}
             <div>
