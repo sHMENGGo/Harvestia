@@ -10,7 +10,6 @@ export default function sideBar({set_show_category, categories}) {
 	const [is_admin, set_is_admin] = useState(false)
 	useEffect(()=> {
 		apiGet('/verifyAdmin').then((data)=> {
-		console.log("Admin status:", data.is_admin)
 		set_is_admin(data.is_admin)
 		})
 	}, [])
@@ -20,7 +19,7 @@ export default function sideBar({set_show_category, categories}) {
 			<section className=' w-full h-[40%] flex gap-18 pt-4 flex-col' >
 				<div className='pr-[5%] flex justify-end items-center w-full' >
 					<FontAwesomeIcon icon={faBars} className='absolute text-sageGreen lg:text-3xl left-[5%] cursor-pointer hover:scale-110 active:scale-95' />
-					<FontAwesomeIcon icon={faCartShopping} className='text-xl lg:text-3xl cursor-pointer mr-2 text-sageGreen hover:scale-110 active:scale-95' />
+					<Link to={'/cart'}><FontAwesomeIcon icon={faCartShopping}  className='text-xl lg:text-3xl cursor-pointer mr-2 text-sageGreen hover:scale-110 active:scale-95' /></Link>
 					<Link to={'/profile'}><FontAwesomeIcon icon={faUser} className=' text-xl lg:text-3xl cursor-pointer hover:scale-110 text-sageGreen active:scale-95' /></Link>
 				</div>
 				<Link to={'/home'} onClick={()=> set_show_category(0)} ><img src={Logo} alt="Harvestia Logo" className=' hover:scale-105 w-9/10 place-self-center' /></Link>

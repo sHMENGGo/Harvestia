@@ -6,6 +6,7 @@ import Home from './pages/home'
 import Admin from './pages/admin'
 import Profile from './pages/profile'
 import Checkout from './pages/checkout'
+import Cart from './pages/cart'
 import RiceInfo from './pages/riceInfo'
 import { apiPost, apiGet, apiDelete, apiPut } from './components/api'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
@@ -93,7 +94,6 @@ export default function App() {
 		if(valid_login) {apiGet('/getRices').then((data)=> set_rices(data.rices ? data.rices : []))}
 	}, [valid_login, refresh])
 	const total_rices = rices.length || 0
-	console.log(rices)
 
 	// Send category to the server
 	const [input_category, set_input_category] = useState('')
@@ -407,8 +407,9 @@ export default function App() {
 					<Route path='/register' element={<Navigate to='/login'/>}/>
 					<Route path='/recoverAccount' element={<Navigate to='/login'/>}/>
 					<Route path='/checkout' element={<Checkout />}/>
-					<Route path='/riceInfo' element={<RiceInfo selected_rice={selected_rice} />}/>
+					<Route path='/riceInfo' element={<RiceInfo selected_rice={selected_rice} user={user} />}/>
 					<Route path='/profile' element={<Profile user={user} set_show_logout_modal={set_show_logout_modal} options={options} set_refresh={set_refresh} />}/>
+					<Route path='/cart' element={<Cart />}/>
 					<Route path='/home' element={<Home 
 						show_category={show_category} 
 						categories={categories}

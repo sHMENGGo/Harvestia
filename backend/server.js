@@ -334,3 +334,19 @@ app.put('/api/editProfile', verify_token, uploadProfileImage.single('new_picture
 	 	res.status(500).json({ message: 'Editing Profile in database failed', err})
   	}
 })
+
+// Add to cart
+app.post('/api/addToCart', verify_token, async (req, res)=> {
+	const { selected_rice } = req.body
+	console.log('add to cart in server:', selected_rice)
+	const user_id = req.user.id
+	try {
+		await prisma.Cart.create({data: {
+			user_id: user_id,
+			rice_id: selected_rice.id,
+		}})
+	} catch(err) {
+		console.error('Prisma error: ', err)
+	 	res.status(500).json({ message: 'Adding to cart failed', err})
+  	}
+})

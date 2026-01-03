@@ -56,3 +56,11 @@ model User {
   created_at      DateTime @default(now())
   reviews         Review[]
 }
+
+model Cart {
+  id Int @id @default(autoincrement())
+  user_id Int
+  rice_id Int
+  quantity Int @default(1)
+  created_at DateTime @default(now())
+}
