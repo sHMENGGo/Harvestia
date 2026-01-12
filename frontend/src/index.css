@@ -52,6 +52,7 @@ textarea:focus {outline: none;}
 .bg-sageGreen {background: #4E7241;}
 .border-sageGreen {border-color: #4E7241;}
 .border-sageGreen-50 {border-color: rgba(78, 114, 65, 0.5);}
+.outline-sageGreen {outline-color: #4E7241;}
 
 @layer utilities {
   /* Chrome, Safari and Opera */
