@@ -50,7 +50,7 @@ export default function riceInfo({selected_rice, user}) {
    }, [selected_rice])
 
    // Add to cart
-   function add_to_cart(selected_rice, quantity, selected_weight) {
+   function add_to_cart(selected_rice) {
       apiPost('/addToCart', {selected_rice, price, quantity, selected_weight}).then((data)=> {
          toast(data.message)
          set_price(selected_rice.price)
@@ -88,7 +88,7 @@ export default function riceInfo({selected_rice, user}) {
                   </div>
                   <div className=" flex justify-between row-start-6 row-span-2 -ml-[30%]" >
                      <button  className="p-3 px-12 bg-brown rounded-xl text-2xl text-offwhite" >Buy Now</button>
-                     <button onClick={()=> {add_to_cart(selected_rice, quantity, selected_weight)}}  className="p-3 ml-5 px-8 bg-sageGreen rounded-xl text-2xl text-offwhite" ><FontAwesomeIcon icon={faCartArrowDown} className="text-offwhite" />Add To Cart</button>
+                     <button onClick={()=> {add_to_cart(selected_rice)}}  className="p-3 ml-5 px-8 bg-sageGreen rounded-xl text-2xl text-offwhite" ><FontAwesomeIcon icon={faCartArrowDown} className="text-offwhite" />Add To Cart</button>
                   </div>
                </div>
             </div>

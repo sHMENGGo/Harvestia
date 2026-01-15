@@ -353,18 +353,33 @@ app.post('/api/getReviews', verify_token, async (req, res)=> {
 // Add to cart
 app.post('/api/addToCart', verify_token, async (req, res)=> {
 	const { selected_rice, price, quantity, selected_weight } = req.body
-	console.log('add to cart in server:', selected_rice)
-	console.log('price in server:', price)
-	console.log('quantity in server:', quantity)
-	console.log('selected_weight in server:', selected_weight)
-	// const user_id = req.user.id
-	// try {
-	// 	await prisma.Cart.create({data: {
-	// 		user_id: user_id,
-	// 		rice_id: selected_rice.id,
-	// 	}})
-	// } catch(err) {
-	// 	console.error('Prisma error: ', err)
-	//  	res.status(500).json({ message: 'Adding to cart failed', err})
-  	// }
+	const user_id = req.user.id
+	try {
+		await prisma.Cart.create({data: {
+			user_id: user_id,
+			rice_id: selected_rice.id,
+			price: parseFloat(price),
+			quantity: parseInt(quantity),
+			weight: parseInt(selected_weight)
+		}})
+		res.status(201).json({ message: 'Added to cart successfully!'})
+		} catch(err) {
+		console.error('Prisma error: ', err)
+	 	res.status(500).json({ message: 'Adding to cart failed', err})
+  	}
+})
+
+// Get cart items
+app.get('/api/getCart', verify_token, async (req, res)=> {
+	const user_id = req.user.id
+	try {
+		const cart_items = await prisma.Cart.findMany({
+			where: {user_id: user_id},
+			include: {rice: true}
+		})
+		res.status(200).json({ cart_items })
+	} catch(err) {
+		console.error('Prisma error: ', err)
+	 	res.status(500).json({ message: 'Fetching Cart items from database failed', err})
+  	}
 })

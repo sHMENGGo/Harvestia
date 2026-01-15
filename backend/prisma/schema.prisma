@@ -31,6 +31,7 @@ model Rice {
   created_at      DateTime  @default(now())
   category        Category? @relation(fields: [category_id], references: [id])
   reviews          Review[]
+  carts            Cart[]
 }
 
 model Review {
@@ -55,6 +56,7 @@ model User {
   image_public_id String?
   created_at      DateTime @default(now())
   reviews         Review[]
+  carts           Cart[]
 }
 
 model Cart {
@@ -62,5 +64,9 @@ model Cart {
   user_id Int
   rice_id Int
   quantity Int @default(1)
+  price Float
+  weight Int
   created_at DateTime @default(now())
+  user User @relation(fields: [user_id], references: [id])
+  rice Rice @relation(fields: [rice_id], references: [id])
 }
