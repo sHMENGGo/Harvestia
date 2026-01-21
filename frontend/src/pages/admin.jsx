@@ -1,32 +1,22 @@
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
 import { faEdit, faTrash, faUser } from "@fortawesome/free-solid-svg-icons"
+import Toaster from "../components/toaster"
+import { useState } from "react"
 
-export default function admin({
-	set_show_add_category_modal, 
-	set_selected_category, 
-	set_show_delete_category_modal, 
-	set_show_add_rice_modal, 
-	set_show_add_user_modal,
-	set_show_delete_rice_modal, 
-	set_show_delete_user_modal,
-	set_show_edit_rice_modal,
-	set_show_edit_category_modal,
-	set_show_edit_user_modal,
-	set_selected_rice, 
-	set_selected_user,
-	users, 
-	total_users, 
-	categories,
-	rices,
-	total_rices
-}) {
+export default function admin({set_show_add_category_modal, set_selected_category, set_show_delete_category_modal, set_show_add_rice_modal, set_show_add_user_modal, set_show_delete_rice_modal, set_show_delete_user_modal, set_show_edit_rice_modal, set_show_edit_category_modal, set_show_edit_user_modal, set_selected_rice, set_selected_user, users, total_users, categories, rices, total_rices}) {
+	// Calculate out of stocks rices
+	const [out_of_stocks, set_out_of_stocks] = useState(0)
+	rices.forEach(rice => {
+		if(rice.stock <= 0) {set_out_of_stocks(prev => prev + 1)}
+	})
+
 
    return (
 		<main className=" grid grid-cols-4 gap-4 w-full p-4 auto-rows-auto">
-			<section className="bg-khaki border-l-5 border-brown p-3 shadow-2xl rounded-lg w-full flex flex-col relative auto-rows-auto" ><p className="text-xl opacity-50 border-b-2 pb-2 w-full text-center mb-3">TOTAL SACKS OF RICE</p><p className="text-5xl text-center text-sageGreen">{total_rices}</p></section>
+			<section className="bg-khaki border-l-5 border-brown p-3 shadow-2xl rounded-lg w-full flex flex-col relative auto-rows-auto" ><p className="text-2xl opacity-50 border-b-2 pb-2 w-full text-center mb-3">TOTAL RICES</p><p className="text-5xl text-center text-sageGreen">{total_rices}</p></section>
 			<section className="bg-khaki border-l-5 border-brown p-3 shadow-2xl rounded-lg w-full flex flex-col auto-rows-auto" ><p className="text-2xl opacity-50 border-b-2 pb-2 w-full text-center mb-3">TOTAL CUSTOMERS</p><p className="text-5xl text-center text-sageGreen">{total_users}</p></section>
-			<section className="bg-khaki border-l-5 border-brown p-3 shadow-2xl rounded-lg w-full flex flex-col auto-rows-auto" ><p className="text-2xl opacity-50 border-b-2 pb-2 w-full text-center mb-3">TOTAL SALES</p><p className="text-5xl text-center text-sageGreen">₱ 3,289</p></section>
-			<section className="bg-khaki border-l-5 border-brown p-3 shadow-2xl rounded-lg w-full flex flex-col auto-rows-auto" ><p className="text-2xl opacity-50 border-b-2 pb-2 w-full text-center mb-3">OUT OF STOCKS</p><p className="text-5xl text-center text-sageGreen">2</p></section>
+			<section className="bg-khaki border-l-5 border-brown p-3 shadow-2xl rounded-lg w-full flex flex-col auto-rows-auto" ><p className="text-2xl opacity-50 border-b-2 pb-2 w-full text-center mb-3">TOTAL SALES</p><p className="text-5xl text-center text-sageGreen">Nan</p></section>
+			<section className="bg-khaki border-l-5 border-brown p-3 shadow-2xl rounded-lg w-full flex flex-col auto-rows-auto" ><p className="text-2xl opacity-50 border-b-2 pb-2 w-full text-center mb-3">OUT OF STOCKS</p><p className="text-5xl text-center text-sageGreen">{out_of_stocks}</p></section>
 
 			{/* Inventory Section */}
 			<section className="backdrop-blur-2xl bg-khaki border-l-5 border-brown p-2 shadow-2xl rounded-lg w-full h-full flex col-span-4 flex-col" >
@@ -134,6 +124,7 @@ export default function admin({
 					</tbody>
 				</table>
 			</section>
+		<Toaster/>
 		</main>
    )
 }

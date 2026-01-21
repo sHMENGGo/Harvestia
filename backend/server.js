@@ -137,7 +137,7 @@ app.post('/api/addCategory', verify_token, verify_admin, async (req, res)=> {
   	const { input_category } = req.body
   	try {
     	await prisma.Category.create({ data: { name: input_category } })
-    	res.status(201).json({ message: 'Category created successfully!' })
+    	res.status(201).json({message: 'Category created successfully!', success: true})
   	} catch(err) {res.status(500).json({ error: 'Posting Category to database failed', err})}
 })
 
@@ -146,7 +146,7 @@ app.delete('/api/deleteCategory', verify_token, verify_admin, async (req, res)=>
 	const {selected_category} = req.body
   	try {
     	await prisma.Category.delete({where: {id: selected_category.id}})
-    	res.status(200).json({message: 'Category deleted successfully!'})
+    	res.status(200).json({message: 'Category deleted successfully!', success: true})
   	} catch(err) {
     	console.error('Prisma error: ', err)
     	res.status(500).json({message: 'Category deletion failed', err})
@@ -160,11 +160,11 @@ app.put('/api/editCategory', verify_token, verify_admin, async (req, res)=> {
 		await prisma.Category.update({where: {id: category_id},
 			data: {name: new_input_category}
 		})
-		res.status(200).json({message: 'Category edited successfully'})
+		res.status(200).json({message: 'Category edited successfully', success: true})
 	}
 	catch(err) {
 		console.error('Prisma error: ', err)
-	 	res.status(500).json({ message: 'Editing Category in database failed', err})
+	 	res.status(500).json({message: 'Editing Category in database failed', err})
 	}
 })
 
@@ -200,10 +200,10 @@ app.post('/api/addRice', verify_token, verify_admin, uploadRiceImage.single('ima
       	image_path: req.file.path,
       	image_public_id: req.file.filename
     	}})
-    	res.status(200).json({message: 'Rice added successfully!'})
+    	res.status(200).json({message: 'Rice added successfully!', success: true})
   	} catch(err) {
     	console.error('Prisma error: ', err)
-    	res.status(500).json({ message: 'Posting Rice to database failed', err})
+    	res.status(500).json({message: 'Posting Rice to database failed', err})
   	}
 })
 
@@ -213,7 +213,7 @@ app.delete('/api/deleteRice', verify_token, verify_admin, async (req, res)=> {
   	try {
     	if(selected_rice.image_public_id) await cloudinary.uploader.destroy(selected_rice.image_public_id)
     	await prisma.Rice.delete({where: {id: selected_rice.id}})
-    	res.status(200).json({message: 'Rice deleted successfully!'})
+    	res.status(200).json({message: 'Rice deleted successfully!', success: true})
   	} catch(err) {
     	console.error('Prisma error: ', err)
     	res.status(500).json({message: 'Rice deletion failed', err})
@@ -241,10 +241,10 @@ app.put('/api/editRice', verify_token, verify_admin, uploadRiceImage.single('new
 			update_data.image_public_id = req.file.filename
 		}
 		await prisma.Rice.update({where: {id: parseInt(rice_id)}, data: update_data})
-		res.status(200).json({message: 'Rice edited successfully!'})
+		res.status(200).json({message: 'Rice edited successfully!', success: true})
 	} catch(err) {
 	 	console.error('Prisma error: ', err)
-	 	res.status(500).json({ message: 'Editing Rice in database failed', err})
+	 	res.status(500).json({message: 'Editing Rice in database failed', err})
   	}
 })
 
@@ -269,10 +269,10 @@ app.post('/api/addUser', verify_token, verify_admin, uploadProfileImage.single('
 			image_path: req.file ? req.file.path : null,
 			image_public_id: req.file ? req.file.filename : null
 		}})
-		res.status(201).json({ message: 'User created successfully!' })
+		res.status(201).json({message: 'User created successfully!', success: true})
 	} catch(err) {
 	 	console.error('Prisma error: ', err)
-	 	res.status(500).json({ message: 'Posting User to database failed', err})
+	 	res.status(500).json({message: 'Posting User to database failed', err})
   	}
 })
 
@@ -281,7 +281,7 @@ app.delete('/api/deleteUser', verify_token, verify_admin, async (req, res)=> {
   	const {selected_user} = req.body
 	try {
 	 	await prisma.User.delete({where: {id: selected_user.id}})
-	 	res.status(200).json({message: 'User deleted successfully!'})
+	 	res.status(200).json({message: 'User deleted successfully!', success: true})
   	} catch(err) {
 	 	console.error('Prisma error: ', err)
 	 	res.status(500).json({message: 'User deletion failed', err})
@@ -305,10 +305,10 @@ app.put('/api/editUser', verify_token, verify_admin, uploadProfileImage.single('
 			update_data.image_public_id = req.file.filename
 		}
 		await prisma.User.update({where: {id: parseInt(user_id)}, data: update_data})
-		res.status(200).json({message: 'User edited successfully!'})
+		res.status(200).json({message: 'User edited successfully!', success: true})
 	} catch(err) {
 	 	console.error('Prisma error: ', err)
-	 	res.status(500).json({ message: 'Editing User in database failed', err})
+	 	res.status(500).json({message: 'Editing User in database failed', err})
   	}
 })
 
@@ -328,10 +328,10 @@ app.put('/api/editProfile', verify_token, uploadProfileImage.single('new_picture
 			update_data.image_public_id = req.file.filename
 		}
 		await prisma.User.update({where: {id: parseInt(user_id)}, data: update_data})
-		res.status(200).json({message: 'Profile edited successfully!'})
+		res.status(200).json({message: 'Profile edited successfully!', success: true})
 	} catch(err) {
 	 	console.error('Prisma error: ', err)
-	 	res.status(500).json({ message: 'Editing Profile in database failed', err})
+	 	res.status(500).json({message: 'Editing Profile in database failed', err})
   	}
 })
 
@@ -346,7 +346,7 @@ app.post('/api/getReviews', verify_token, async (req, res)=> {
 		res.status(200).json({ reviews })
 	} catch(err) {
 		console.error('Prisma error: ', err)
-	 	res.status(500).json({ message: 'Fetching Reviews from database failed', err})
+	 	res.status(500).json({message: 'Fetching Reviews from database failed', err})
   	}
 })
 
@@ -362,10 +362,10 @@ app.post('/api/addToCart', verify_token, async (req, res)=> {
 			quantity: parseInt(quantity),
 			weight: parseInt(selected_weight)
 		}})
-		res.status(201).json({ message: 'Added to cart successfully!'})
+		res.status(201).json({message: 'Added to cart successfully!', success: true})
 		} catch(err) {
 		console.error('Prisma error: ', err)
-	 	res.status(500).json({ message: 'Adding to cart failed', err})
+	 	res.status(500).json({message: 'Adding to cart failed', err})
   	}
 })
 
@@ -380,6 +380,30 @@ app.get('/api/getCart', verify_token, async (req, res)=> {
 		res.status(200).json({ cart_items })
 	} catch(err) {
 		console.error('Prisma error: ', err)
-	 	res.status(500).json({ message: 'Fetching Cart items from database failed', err})
+	 	res.status(500).json({message: 'Fetching Cart items from database failed', err})
+  	}
+})
+
+// Remove one cart item
+app.delete('/api/removeItem', verify_token, async (req, res)=> {
+	const { item_id } = req.body
+	try {
+		await prisma.Cart.delete({where: {id: parseInt(item_id)}})
+		res.status(200).json({message: 'Cart item deleted successfully!', success: true})
+	} catch(err) {
+		console.error('Prisma error: ', err)
+	 	res.status(500).json({message: 'Deleting Cart item failed', err})
+  	}
+})
+
+// Remove multiple cart items
+app.delete('/api/removeMultipleItems', verify_token, async (req, res)=> {
+	const { item_ids } = req.body
+	try {
+		await prisma.Cart.deleteMany({where: {id: {in: item_ids.map(id => parseInt(id))}}})
+		res.status(200).json({message: 'Selected cart items deleted successfully!', success: true})
+	} catch(err) {
+		console.error('Prisma error: ', err)
+	 	res.status(500).json({message: 'Deleting selected Cart items failed', err})
   	}
 })

@@ -3,12 +3,11 @@ import { faArrowLeft, faCartArrowDown, faStar, faUser } from "@fortawesome/free-
 import { useNavigate } from "react-router-dom"
 import { useEffect, useState } from "react"
 import { apiPost } from "../components/api"
-import toast, { Toaster } from "react-hot-toast"
+import toast from "react-hot-toast"
+import Toaster from "../components/toaster"
 
 export default function riceInfo({selected_rice, user}) {
    const navigate = useNavigate()
-
-  
 
    // Quantity changer
    const [quantity, set_quantity] = useState(1)
@@ -52,7 +51,7 @@ export default function riceInfo({selected_rice, user}) {
    // Add to cart
    function add_to_cart(selected_rice) {
       apiPost('/addToCart', {selected_rice, price, quantity, selected_weight}).then((data)=> {
-         toast(data.message)
+         if(data.success) {toast.success(data.message)}
          set_price(selected_rice.price)
          set_quantity(1)
          set_selected_weight(weights[0])
@@ -119,9 +118,8 @@ export default function riceInfo({selected_rice, user}) {
                   )) : (<p className="inset-shadow-neutral-700 inset-shadow-[0_0_3px] rounded-xl p-2 text-center text-neutral-500" >No reviews</p>)}
                </div>
             </div>
-
-         <Toaster/>
          </section>
+      <Toaster/>
       </main>
    )
 }

@@ -12,7 +12,8 @@ import { apiPost, apiGet, apiDelete, apiPut } from './components/api'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faCircleXmark } from '@fortawesome/free-solid-svg-icons'
 import imageCompression from 'browser-image-compression'
-import toast, { Toaster } from 'react-hot-toast'
+import toast from 'react-hot-toast'
+import Toaster from './components/toaster'
 
 export default function App() {
 	const [show_add_category_modal, set_show_add_category_modal] = useState(false)
@@ -99,7 +100,7 @@ export default function App() {
 	const [input_category, set_input_category] = useState('')
 	function add_category() {
 		apiPost('/addCategory', {input_category: input_category}).then((data)=> {
-			toast(data.message)
+			if(data.success) {toast.success(data.message)}
 			set_input_category('')
 			set_show_add_category_modal(false)
 			set_refresh(prev => !prev)
@@ -110,7 +111,7 @@ export default function App() {
 	const [selected_category, set_selected_category] = useState(null)
 	function deleteCategory() {
 		apiDelete('/deleteCategory', {selected_category: selected_category}).then((data)=> {
-			toast(data.message)
+			if(data.success) {toast.success(data.message)}
 			set_show_delete_category_modal(false)
 			set_refresh(prev => !prev)
 		})
@@ -128,7 +129,7 @@ export default function App() {
 	// Function to edit category
 	function editCategory() {
 		apiPut('/editCategory', {new_input_category: new_input_category, category_id: category_id}).then((data)=> {
-			toast(data.message)
+			if(data.success) {toast.success(data.message)}
 			set_show_edit_category_modal(false)
 			set_refresh(prev => !prev)
 			set_new_input_category('')
@@ -166,7 +167,7 @@ export default function App() {
 		formData.append('input_description', input_description)
 		formData.append('image_file', image_file)
 		apiPost('/addRice', formData).then((data)=> {
-			toast(data.message)
+			if(data.success) {toast.success(data.message)}
 			set_show_add_rice_modal(false)
 			set_refresh(prev => !prev)
 			set_input_rice('')
@@ -198,7 +199,7 @@ export default function App() {
 	// Function to delete rice
 	function delete_rice() {
 		apiDelete('/deleteRice', {selected_rice: selected_rice}).then((data)=> {
-			toast(data.message)
+			if(data.success) {toast.success(data.message)}
 			set_show_delete_rice_modal(false)
 			set_refresh(prev => !prev)
 		})
@@ -261,7 +262,7 @@ export default function App() {
 		formData.append('rice_id', selected_rice.id || null)
 		formData.append('new_image_file', new_image_file || null)
 		apiPut('/editRice', formData).then((data)=> {
-			toast(data.message)
+			if(data.success) {toast.success(data.message)}
 			set_refresh(prev => !prev)
 			set_show_edit_rice_modal(false)
 			set_new_input_rice('')
@@ -297,7 +298,7 @@ export default function App() {
 		formData.append('input_is_admin', input_is_admin)
 		formData.append('profile_file', profile_file || null)
 		apiPost('/addUser', formData).then((data)=> {
-			toast(data.message)
+			if(data.success) {toast.success(data.message)}
 			set_show_add_user_modal(false)
 			set_refresh(prev => !prev)
 			set_input_username('')
@@ -323,7 +324,7 @@ export default function App() {
 	// Function to delete user
 	function delete_user() {
 		apiDelete('/deleteUser', {selected_user: selected_user}).then((data)=> {
-			toast(data.message)
+			if(data.success) {toast.success(data.message)}
 			set_show_delete_user_modal(false)
 			set_selected_user(null)
 			set_refresh(prev => !prev)
@@ -370,7 +371,7 @@ export default function App() {
 		formData.append('user_id', selected_user.id || null)
 		formData.append('new_profile_file', new_profile_file || null)
 		apiPut('/editUser', formData).then((data)=> {
-			toast(data.message)
+			if(data.success) {toast.success(data.message)}
 			set_refresh(prev => !prev)
 			set_show_edit_user_modal(false)
 			set_new_input_username('')
@@ -436,14 +437,7 @@ export default function App() {
 						total_rices={total_rices}
 					/>}/>
 				</Routes>
-				<Toaster toastOptions={{
-					duration: 1500,
-					style: {
-						background: '#af4c0f',
-						color: '#FFFFFF',
-						fontWeight: 'bold',
-					}
-				}}/>
+				<Toaster/>
 			</section>
 
 			{/* Show sidebar but not in login */}
